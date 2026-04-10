@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { db } from '@/db/client';
-import { userProfile } from '@/db/schema';
+import { userProfile, userGoals as userGoalsTable, weightLog } from '@/db/schema';
 import { todayString } from '@/lib/date';
+import { recalculateGoals } from '@/lib/profile-service';
 import { useGoals } from '@/hooks/useGoals';
 import { useDailyTotals } from '@/hooks/useDailyTotals';
 import { useDailyMeals } from '@/hooks/useDailyMeals';
@@ -13,14 +14,18 @@ import { DateNav } from '@/components/DateNav';
 import { MacroRing } from '@/components/MacroRing';
 import { MealTimeline } from '@/components/MealTimeline';
 import { WeightSparkline } from '@/components/WeightSparkline';
+import { RecalculBanner } from '@/components/RecalculBanner';
 import { FAB } from '@/components/FAB';
 import { colors, fontSize, spacing, radii } from '@/constants/theme';
+import type { Sex, ActivityLevel, MacroPreset } from '@/lib/tdee';
 
 export default function DashboardScreen() {
   const router = useRouter();
   const [date, setDate] = useState(todayString);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   const { data: profiles } = useLiveQuery(db.select().from(userProfile));
+  const { data: goalsData } = useLiveQuery(db.select().from(userGoalsTable));
   const goals = useGoals();
   const totals = useDailyTotals(date);
   const meals = useDailyMeals(date);
@@ -30,12 +35,44 @@ export default function DashboardScreen() {
     return <Redirect href="/onboarding" />;
   }
 
+  const profile = profiles[0];
   const remaining = goals.kcalTarget - totals.totalKcal;
+
+  // Check if weight changed significantly since last TDEE calculation
+  const latestWeight = weights.length > 0 ? weights[weights.length - 1].weightKg : null;
+  const onboardingWeight = weights.length > 0 ? weights[0].weightKg : null;
+  const weightDelta = latestWeight && onboardingWeight ? latestWeight - onboardingWeight : 0;
+  const showRecalcBanner = !bannerDismissed && Math.abs(weightDelta) >= 2;
+
+  const handleRecalculate = useCallback(async () => {
+    if (!profile || !latestWeight) return;
+    const macroPreset = (goalsData[0]?.macroPreset as MacroPreset) ?? 'balanced';
+    await recalculateGoals(
+      {
+        sex: profile.sex as Sex,
+        birthDate: profile.birthDate,
+        heightCm: profile.heightCm,
+        weightKg: latestWeight,
+        activityLevel: profile.activityLevel as ActivityLevel,
+        goalRate: profile.goalRate ?? 0,
+      },
+      macroPreset,
+    );
+    setBannerDismissed(true);
+  }, [profile, latestWeight, goalsData]);
 
   return (
     <View style={styles.screen}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <DateNav date={date} onDateChange={setDate} />
+
+        {showRecalcBanner && (
+          <RecalculBanner
+            deltaKg={weightDelta}
+            onRecalculate={handleRecalculate}
+            onDismiss={() => setBannerDismissed(true)}
+          />
+        )}
 
         {/* Remaining kcal */}
         <View style={styles.remainingCard}>
