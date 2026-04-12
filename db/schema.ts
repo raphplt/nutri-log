@@ -22,6 +22,8 @@ export const foods = sqliteTable(
 		fatPer100g: real("fat_per_100g").notNull(),
 		fiberPer100g: real("fiber_per_100g"),
 		defaultServingG: real("default_serving_g").default(100),
+		nutriscoreGrade: text("nutriscore_grade"),
+		novaGroup: integer("nova_group"),
 		useCount: integer("use_count").default(0),
 		lastUsedAt: text("last_used_at"),
 		lastOffFetchAt: text("last_off_fetch_at"),
@@ -52,6 +54,7 @@ export const mealItems = sqliteTable(
 			.notNull()
 			.references(() => meals.id, { onDelete: "cascade" }),
 		foodId: text("food_id").references(() => foods.id),
+		servingId: integer("serving_id"),
 		name: text("name").notNull(),
 		quantityG: real("quantity_g").notNull(),
 		kcal: real("kcal").notNull(),
@@ -62,6 +65,22 @@ export const mealItems = sqliteTable(
 		createdAt: text("created_at").notNull(),
 	},
 	(table) => [index("idx_meal_items_meal_id").on(table.mealId)],
+);
+
+export const foodServings = sqliteTable(
+	"food_servings",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		foodId: text("food_id")
+			.notNull()
+			.references(() => foods.id, { onDelete: "cascade" }),
+		label: text("label").notNull(),
+		grams: real("grams").notNull(),
+		isDefault: integer("is_default", { mode: "boolean" })
+			.notNull()
+			.default(false),
+	},
+	(table) => [index("idx_food_servings_food_id").on(table.foodId)],
 );
 
 export const userProfile = sqliteTable("user_profile", {
@@ -109,3 +128,14 @@ export const appMeta = sqliteTable("app_meta", {
 	key: text("key").primaryKey(),
 	value: text("value").notNull(),
 });
+
+export const scanQueue = sqliteTable(
+	"scan_queue",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		barcode: text("barcode").notNull(),
+		createdAt: integer("created_at").notNull(),
+		resolvedAt: integer("resolved_at"),
+	},
+	(table) => [index("idx_scan_queue_resolved_at").on(table.resolvedAt)],
+);

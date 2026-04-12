@@ -55,8 +55,8 @@ export function WeightSparkline({ data }: Props) {
 				yAxisOffset={min - 1}
 				maxValue={max - min + 2}
 				areaChart
-				startFillColor={colors.primary + "30"}
-				endFillColor={colors.primary + "05"}
+				startFillColor={`${colors.primary}30`}
+				endFillColor={`${colors.primary}05`}
 				isAnimated
 				animationDuration={600}
 			/>

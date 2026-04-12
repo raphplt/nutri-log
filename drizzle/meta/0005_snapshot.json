@@ -1,8 +1,8 @@
 {
 	"version": "6",
 	"dialect": "sqlite",
-	"id": "715b3552-592b-44ef-847b-abae3c2e8836",
-	"prevId": "f1fbe2c6-2e52-4977-8194-a2d33a8b3f64",
+	"id": "e93839f8-d1d0-4418-bd68-572eab06dd7d",
+	"prevId": "6bab567c-0ef4-4831-b4ef-b6e8541cf827",
 	"tables": {
 		"app_meta": {
 			"name": "app_meta",
@@ -24,6 +24,68 @@
 			},
 			"indexes": {},
 			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"food_servings": {
+			"name": "food_servings",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "integer",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": true
+				},
+				"food_id": {
+					"name": "food_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"label": {
+					"name": "label",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"grams": {
+					"name": "grams",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"is_default": {
+					"name": "is_default",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": false
+				}
+			},
+			"indexes": {
+				"idx_food_servings_food_id": {
+					"name": "idx_food_servings_food_id",
+					"columns": ["food_id"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {
+				"food_servings_food_id_foods_id_fk": {
+					"name": "food_servings_food_id_foods_id_fk",
+					"tableFrom": "food_servings",
+					"tableTo": "foods",
+					"columnsFrom": ["food_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
 			"compositePrimaryKeys": {},
 			"uniqueConstraints": {},
 			"checkConstraints": {}
@@ -183,6 +245,13 @@
 				"food_id": {
 					"name": "food_id",
 					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"serving_id": {
+					"name": "serving_id",
+					"type": "integer",
 					"primaryKey": false,
 					"notNull": false,
 					"autoincrement": false
@@ -360,6 +429,50 @@
 				}
 			},
 			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"scan_queue": {
+			"name": "scan_queue",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "integer",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": true
+				},
+				"barcode": {
+					"name": "barcode",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"resolved_at": {
+					"name": "resolved_at",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				}
+			},
+			"indexes": {
+				"idx_scan_queue_resolved_at": {
+					"name": "idx_scan_queue_resolved_at",
+					"columns": ["resolved_at"],
+					"isUnique": false
+				}
+			},
 			"foreignKeys": {},
 			"compositePrimaryKeys": {},
 			"uniqueConstraints": {},

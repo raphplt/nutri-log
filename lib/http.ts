@@ -19,12 +19,18 @@ interface FetchOptions {
 	timeoutMs?: number;
 }
 
-function composeSignal(external: AbortSignal | undefined, timeoutMs: number): AbortSignal {
+function composeSignal(
+	external: AbortSignal | undefined,
+	timeoutMs: number,
+): AbortSignal {
 	const ctrl = new AbortController();
 	const onAbort = () => ctrl.abort(external?.reason);
 	if (external?.aborted) ctrl.abort(external.reason);
 	else external?.addEventListener("abort", onAbort, { once: true });
-	const timer = setTimeout(() => ctrl.abort(new DOMException("timeout", "TimeoutError")), timeoutMs);
+	const timer = setTimeout(
+		() => ctrl.abort(new DOMException("timeout", "TimeoutError")),
+		timeoutMs,
+	);
 	ctrl.signal.addEventListener(
 		"abort",
 		() => {
@@ -36,7 +42,10 @@ function composeSignal(external: AbortSignal | undefined, timeoutMs: number): Ab
 	return ctrl.signal;
 }
 
-export async function fetchJson<T>(url: string, opts: FetchOptions = {}): Promise<T> {
+export async function fetchJson<T>(
+	url: string,
+	opts: FetchOptions = {},
+): Promise<T> {
 	const timeout = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 	let lastErr: unknown;
 
@@ -63,7 +72,8 @@ export async function fetchJson<T>(url: string, opts: FetchOptions = {}): Promis
 		} catch (err) {
 			lastErr = err;
 			if (opts.signal?.aborted) throw err;
-			if (err instanceof HttpError && err.status >= 400 && err.status < 500) throw err;
+			if (err instanceof HttpError && err.status >= 400 && err.status < 500)
+				throw err;
 			if (attempt < RETRY_DELAYS_MS.length) {
 				await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]));
 				continue;

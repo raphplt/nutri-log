@@ -164,6 +164,9 @@ export default function SettingsScreen() {
 					</Pressable>
 				))}
 			</View>
+
+			<Text style={styles.sectionLabel}>{t("settings.about")}</Text>
+			<Text style={styles.attribution}>{t("settings.attribution")}</Text>
 		</ScrollView>
 	);
 }
@@ -245,5 +248,10 @@ const styles = StyleSheet.create({
 	},
 	langTextSelected: {
 		color: colors.primaryLight,
+	},
+	attribution: {
+		fontSize: fontSize.xs,
+		color: colors.textDim,
+		lineHeight: 18,
 	},
 });

@@ -24,6 +24,31 @@ export interface OFFProduct {
 	novaGroup: number | null;
 }
 
+export interface ParsedServing {
+	label: string;
+	grams: number;
+}
+
+/**
+ * Extract a serving from OFF fields. Prefers `serving_quantity` (numeric grams)
+ * and falls back to regex-parsing `serving_size` strings like "30 g (1 biscuit)".
+ */
+export function parseServing(
+	servingQuantity: number | null,
+	servingSize: string | null,
+): ParsedServing | null {
+	if (servingQuantity != null && servingQuantity > 0) {
+		const label = servingSize?.trim() || `${servingQuantity} g`;
+		return { label, grams: servingQuantity };
+	}
+	if (!servingSize) return null;
+	const match = servingSize.match(/(\d+(?:[.,]\d+)?)\s*g\b/i);
+	if (!match) return null;
+	const grams = Number(match[1].replace(",", "."));
+	if (!Number.isFinite(grams) || grams <= 0) return null;
+	return { label: servingSize.trim(), grams };
+}
+
 interface ProductResponse {
 	status: number;
 	product?: Record<string, unknown>;
@@ -95,7 +120,12 @@ export async function searchProducts(
 		pageSize = 20,
 		page = 1,
 		signal,
-	}: { langs?: string[]; pageSize?: number; page?: number; signal?: AbortSignal } = {},
+	}: {
+		langs?: string[];
+		pageSize?: number;
+		page?: number;
+		signal?: AbortSignal;
+	} = {},
 ): Promise<OFFProduct[]> {
 	const params = new URLSearchParams({
 		q: query,

@@ -9,14 +9,16 @@ import {
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import "react-native-reanimated";
 import { colors, fonts } from "@/constants/theme";
 import { db } from "@/db/client";
 import migrations from "@/drizzle/migrations";
+import { useScanQueueResolver } from "@/hooks/useScanQueueResolver";
 import { getMeta } from "@/lib/app-meta";
+import { seedCiqualIfNeeded } from "@/lib/ciqual-seed";
 import i18n, { type LanguagePreference, resolveLanguage } from "@/lib/i18n";
 
 export { ErrorBoundary } from "expo-router";
@@ -32,6 +34,9 @@ export default function RootLayout() {
 		Inter_600SemiBold,
 		Inter_700Bold,
 	});
+	const [seedReady, setSeedReady] = useState(false);
+	const [seeding, setSeeding] = useState(false);
+	useScanQueueResolver();
 
 	useEffect(() => {
 		if (!success) return;
@@ -49,10 +54,29 @@ export default function RootLayout() {
 	}, [success]);
 
 	useEffect(() => {
-		if (success && fontsLoaded) {
+		if (!success) return;
+		let cancelled = false;
+		(async () => {
+			try {
+				setSeeding(true);
+				await seedCiqualIfNeeded();
+			} finally {
+				if (!cancelled) {
+					setSeeding(false);
+					setSeedReady(true);
+				}
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, [success]);
+
+	useEffect(() => {
+		if (success && fontsLoaded && seedReady) {
 			SplashScreen.hideAsync();
 		}
-	}, [success, fontsLoaded]);
+	}, [success, fontsLoaded, seedReady]);
 
 	if (error) {
 		return (
@@ -66,6 +90,15 @@ export default function RootLayout() {
 
 	if (!success || !fontsLoaded) {
 		return null;
+	}
+
+	if (seeding && !seedReady) {
+		return (
+			<View style={styles.center}>
+				<ActivityIndicator color={colors.primary} size="large" />
+				<Text style={styles.loading}>{t("common.preparingFoods")}</Text>
+			</View>
+		);
 	}
 
 	return (
@@ -86,6 +119,10 @@ export default function RootLayout() {
 			<Stack.Screen name="meal/[id]" options={{ title: t("nav.meal") }} />
 			<Stack.Screen name="weight" options={{ title: t("nav.weight") }} />
 			<Stack.Screen name="profile" options={{ title: t("nav.profile") }} />
+			<Stack.Screen
+				name="food/[id]/edit"
+				options={{ title: t("edit.title") }}
+			/>
 		</Stack>
 	);
 }
@@ -101,5 +138,11 @@ const styles = StyleSheet.create({
 		color: colors.danger,
 		fontSize: 16,
 		fontFamily: fonts.medium,
+	},
+	loading: {
+		color: colors.textMuted,
+		fontSize: 14,
+		fontFamily: fonts.medium,
+		marginTop: 16,
 	},
 });

@@ -5,9 +5,11 @@ import { createId } from "./nanoid";
 import {
 	fetchProductByBarcode,
 	type OFFProduct,
+	parseServing,
 	searchProducts,
 } from "./off-api";
 import { searchLocal } from "./search-service";
+import { ensureServings } from "./serving-service";
 
 const OFF_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -26,6 +28,8 @@ function offToFoodValues(p: OFFProduct) {
 		fatPer100g: p.fatPer100g,
 		fiberPer100g: p.fiberPer100g,
 		defaultServingG: p.servingG ?? 100,
+		nutriscoreGrade: p.nutriscoreGrade,
+		novaGroup: p.novaGroup,
 		useCount: 0,
 		lastUsedAt: null,
 		lastOffFetchAt: now,
@@ -69,15 +73,29 @@ export async function getOrFetchByBarcode(
 					fatPer100g: product.fatPer100g,
 					fiberPer100g: product.fiberPer100g,
 					defaultServingG: product.servingG ?? local.defaultServingG ?? 100,
+					nutriscoreGrade: product.nutriscoreGrade,
+					novaGroup: product.novaGroup,
 					lastOffFetchAt: now,
 				})
 				.where(eq(foods.id, local.id));
-			const [updated] = await db.select().from(foods).where(eq(foods.id, local.id)).limit(1);
+			await ensureServings(
+				local.id,
+				parseServing(product.servingG, product.servingSize),
+			);
+			const [updated] = await db
+				.select()
+				.from(foods)
+				.where(eq(foods.id, local.id))
+				.limit(1);
 			return updated ?? local;
 		}
 
 		const values = offToFoodValues(product);
 		await db.insert(foods).values(values);
+		await ensureServings(
+			values.id,
+			parseServing(product.servingG, product.servingSize),
+		);
 		return { ...values };
 	} catch {
 		return local ?? null;
@@ -93,7 +111,9 @@ export async function searchFoods(
 	const offResults: FoodRow[] = [];
 	try {
 		const offProducts = await searchProducts(query, { signal });
-		const localBarcodes = new Set(localResults.map((f) => f.barcode).filter(Boolean));
+		const localBarcodes = new Set(
+			localResults.map((f) => f.barcode).filter(Boolean),
+		);
 		for (const p of offProducts) {
 			if (localBarcodes.has(p.code)) continue;
 			offResults.push(offToFoodValues(p));

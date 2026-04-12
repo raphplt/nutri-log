@@ -11,11 +11,7 @@ import { RecalculBanner } from "@/components/RecalculBanner";
 import { WeightSparkline } from "@/components/WeightSparkline";
 import { colors, fontSize, radii, spacing } from "@/constants/theme";
 import { db } from "@/db/client";
-import {
-	userGoals as userGoalsTable,
-	userProfile,
-	weightLog,
-} from "@/db/schema";
+import { userGoals as userGoalsTable, userProfile } from "@/db/schema";
 import { useDailyMeals } from "@/hooks/useDailyMeals";
 import { useDailyTotals } from "@/hooks/useDailyTotals";
 import { useGoals } from "@/hooks/useGoals";

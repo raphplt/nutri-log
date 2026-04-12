@@ -33,6 +33,7 @@ export interface AddMealItemInput {
 	date: string;
 	mealType: MealType;
 	foodId: string | null;
+	servingId?: number | null;
 	name: string;
 	quantityG: number;
 	kcal: number;
@@ -50,6 +51,7 @@ export async function addMealItem(input: AddMealItemInput) {
 		id: createId(),
 		mealId,
 		foodId: input.foodId,
+		servingId: input.servingId ?? null,
 		name: input.name,
 		quantityG: input.quantityG,
 		kcal: input.kcal,

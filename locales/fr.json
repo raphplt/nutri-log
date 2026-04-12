@@ -20,6 +20,7 @@
 		"today": "Aujourd'hui",
 		"yesterday": "Hier",
 		"optional": "optionnel",
+		"preparingFoods": "Préparation des aliments…",
 		"kcal": "kcal",
 		"grams": "g",
 		"grams_long": "grammes",
@@ -144,6 +145,19 @@
 		"frequent": "FRÉQUENTS",
 		"rawFood": "🥕 Aliment brut"
 	},
+	"badges": {
+		"novaShort": "NOVA {{n}}"
+	},
+	"edit": {
+		"title": "Compléter les infos",
+		"kcalLabel": "Énergie (kcal / 100g)",
+		"proteinLabel": "Protéines (g / 100g)",
+		"carbsLabel": "Glucides (g / 100g)",
+		"fatLabel": "Lipides (g / 100g)",
+		"fiberLabel": "Fibres (g / 100g)",
+		"servingLabel": "Portion par défaut (g)",
+		"saved": "Modifications enregistrées"
+	},
 	"confirm": {
 		"quantity": "QUANTITÉ",
 		"mealType": "TYPE DE REPAS",
@@ -181,7 +195,9 @@
 		"language": "LANGUE",
 		"langFr": "Français",
 		"langEn": "English",
-		"langAuto": "Auto"
+		"langAuto": "Auto",
+		"about": "À PROPOS",
+		"attribution": "Données aliments bruts : ANSES CIQUAL 2020 (Licence Ouverte Etalab v2.0)."
 	},
 	"onboarding": {
 		"bodyTitle": "Infos physiques",

@@ -20,6 +20,7 @@
 		"today": "Today",
 		"yesterday": "Yesterday",
 		"optional": "optional",
+		"preparingFoods": "Preparing foods…",
 		"kcal": "kcal",
 		"grams": "g",
 		"grams_long": "grams",
@@ -137,6 +138,19 @@
 		"resolvedOne": "1 product synced",
 		"resolvedMany": "{{count}} products synced"
 	},
+	"badges": {
+		"novaShort": "NOVA {{n}}"
+	},
+	"edit": {
+		"title": "Complete info",
+		"kcalLabel": "Energy (kcal / 100g)",
+		"proteinLabel": "Protein (g / 100g)",
+		"carbsLabel": "Carbs (g / 100g)",
+		"fatLabel": "Fat (g / 100g)",
+		"fiberLabel": "Fiber (g / 100g)",
+		"servingLabel": "Default serving (g)",
+		"saved": "Changes saved"
+	},
 	"search": {
 		"placeholder": "Search a food...",
 		"empty": "No results",
@@ -181,7 +195,9 @@
 		"language": "LANGUAGE",
 		"langFr": "Français",
 		"langEn": "English",
-		"langAuto": "Auto"
+		"langAuto": "Auto",
+		"about": "ABOUT",
+		"attribution": "Raw foods data: ANSES CIQUAL 2020 (Etalab Open License v2.0)."
 	},
 	"onboarding": {
 		"bodyTitle": "Physical info",

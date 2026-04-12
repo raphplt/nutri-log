@@ -44,6 +44,8 @@ interface RawRow {
 	fat_per_100g: number;
 	fiber_per_100g: number | null;
 	default_serving_g: number | null;
+	nutriscore_grade: string | null;
+	nova_group: number | null;
 	use_count: number | null;
 	last_used_at: string | null;
 	last_off_fetch_at: string | null;
@@ -65,6 +67,8 @@ function rawToFood(r: RawRow, score: number): LocalSearchResult {
 		fatPer100g: r.fat_per_100g,
 		fiberPer100g: r.fiber_per_100g,
 		defaultServingG: r.default_serving_g,
+		nutriscoreGrade: r.nutriscore_grade,
+		novaGroup: r.nova_group,
 		useCount: r.use_count,
 		lastUsedAt: r.last_used_at,
 		lastOffFetchAt: r.last_off_fetch_at,

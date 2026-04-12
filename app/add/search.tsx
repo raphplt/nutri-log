@@ -1,3 +1,4 @@
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,6 +11,8 @@ import {
 	TextInput,
 	View,
 } from "react-native";
+import { FoodQualityBadges } from "@/components/FoodQualityBadges";
+import { colors, fontSize, radii, spacing } from "@/constants/theme";
 import {
 	type FoodRow,
 	getFrequentFoods,
@@ -17,7 +20,6 @@ import {
 	searchFoodsRemote,
 } from "@/lib/food-service";
 import { getRecentSearches, recordSearchHistory } from "@/lib/search-service";
-import { colors, fontSize, radii, spacing } from "@/constants/theme";
 
 const DEBOUNCE_MS = 250;
 
@@ -50,7 +52,9 @@ export default function SearchScreen() {
 			if (controller.signal.aborted) return;
 			setResults(local);
 
-			const existing = new Set(local.map((f) => f.barcode).filter((b): b is string => !!b));
+			const existing = new Set(
+				local.map((f) => f.barcode).filter((b): b is string => !!b),
+			);
 			const remote = await searchFoodsRemote(text, existing, controller.signal);
 			if (controller.signal.aborted) return;
 			if (remote.length > 0) {
@@ -96,6 +100,18 @@ export default function SearchScreen() {
 
 	const renderItem = ({ item }: { item: FoodRow }) => (
 		<Pressable onPress={() => handleSelect(item)} style={styles.resultRow}>
+			{item.imageUrl ? (
+				<Image
+					source={{ uri: item.imageUrl }}
+					style={styles.thumb}
+					contentFit="cover"
+					cachePolicy="memory-disk"
+					transition={180}
+					recyclingKey={item.id}
+				/>
+			) : (
+				<View style={[styles.thumb, styles.thumbPlaceholder]} />
+			)}
 			<View style={styles.resultInfo}>
 				<View style={styles.nameRow}>
 					<Text style={styles.resultName} numberOfLines={1}>
@@ -110,6 +126,13 @@ export default function SearchScreen() {
 						{item.brand}
 					</Text>
 				)}
+				<View style={styles.resultBadges}>
+					<FoodQualityBadges
+						nutriscoreGrade={item.nutriscoreGrade}
+						novaGroup={item.novaGroup}
+						compact
+					/>
+				</View>
 			</View>
 			<Text style={styles.resultKcal}>
 				{Math.round(item.kcalPer100g)} {t("common.kcal")}
@@ -131,7 +154,9 @@ export default function SearchScreen() {
 				returnKeyType="search"
 			/>
 
-			{loading && <ActivityIndicator color={colors.primary} style={styles.loader} />}
+			{loading && (
+				<ActivityIndicator color={colors.primary} style={styles.loader} />
+			)}
 
 			{showSuggestions ? (
 				<FlatList
@@ -156,7 +181,9 @@ export default function SearchScreen() {
 							)}
 							{frequentFoods.length > 0 && (
 								<View style={styles.suggestionBlock}>
-									<Text style={styles.sectionLabel}>{t("search.frequent")}</Text>
+									<Text style={styles.sectionLabel}>
+										{t("search.frequent")}
+									</Text>
 									{frequentFoods.map((f) => (
 										<Pressable
 											key={f.id}
@@ -245,9 +272,27 @@ const styles = StyleSheet.create({
 	},
 	resultInfo: { flex: 1, marginRight: spacing.md },
 	nameRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-	resultName: { fontSize: fontSize.md, fontWeight: "600", color: colors.text, flexShrink: 1 },
+	resultName: {
+		fontSize: fontSize.md,
+		fontWeight: "600",
+		color: colors.text,
+		flexShrink: 1,
+	},
 	rawBadge: { fontSize: fontSize.xs, color: colors.textMuted },
 	resultBrand: { fontSize: fontSize.sm, color: colors.textMuted, marginTop: 2 },
+	resultBadges: { marginTop: 4 },
 	resultKcal: { fontSize: fontSize.md, fontWeight: "700", color: colors.text },
-	empty: { textAlign: "center", color: colors.textMuted, marginTop: spacing.xl },
+	thumb: {
+		width: 44,
+		height: 44,
+		borderRadius: radii.sm,
+		marginRight: spacing.md,
+		backgroundColor: colors.background,
+	},
+	thumbPlaceholder: { backgroundColor: colors.border },
+	empty: {
+		textAlign: "center",
+		color: colors.textMuted,
+		marginTop: spacing.xl,
+	},
 });

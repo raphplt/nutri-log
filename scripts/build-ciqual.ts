@@ -75,7 +75,9 @@ async function main() {
 
 	const wb = XLSX.readFile(path);
 	const sheet = wb.Sheets[wb.SheetNames[0]];
-	const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: null });
+	const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
+		defval: null,
+	});
 
 	const entries: CiqualEntry[] = [];
 	let skipped = 0;
@@ -95,7 +97,10 @@ async function main() {
 		entries.push({
 			code,
 			name: name.trim(),
-			group: typeof row[COLS.group] === "string" ? (row[COLS.group] as string) : null,
+			group:
+				typeof row[COLS.group] === "string"
+					? (row[COLS.group] as string)
+					: null,
 			kcal,
 			protein: parseValue(row[COLS.protein]),
 			carbs: parseValue(row[COLS.carbs]),
@@ -107,7 +112,9 @@ async function main() {
 
 	const out = join(__dirname, "..", "assets", "ciqual.json");
 	writeFileSync(out, JSON.stringify(entries));
-	console.log(`→ wrote ${entries.length} entries (skipped ${skipped}) to ${out}`);
+	console.log(
+		`→ wrote ${entries.length} entries (skipped ${skipped}) to ${out}`,
+	);
 }
 
 main().catch((e) => {
