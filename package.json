@@ -8,7 +8,11 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "db:generate": "drizzle-kit generate",
-    "tsc": "tsc --noEmit"
+    "tsc": "tsc --noEmit",
+    "biome:check": "biome check .",
+    "biome:lint": "biome lint .",
+    "biome:format": "biome format . --write",
+    "biome:fix": "biome check . --write"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
