@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
-import { colors, fontSize, spacing } from '@/constants/theme';
+import { colors, fonts, fontSize, spacing } from '@/constants/theme';
 
 interface Props {
   label: string;
@@ -16,7 +16,7 @@ export function MacroRing({ label, current, target, color, unit = 'g' }: Props) 
 
   const data = [
     { value: pct, color },
-    { value: remaining, color: colors.surface },
+    { value: remaining, color: colors.surfaceLight },
   ];
 
   return (
@@ -32,7 +32,8 @@ export function MacroRing({ label, current, target, color, unit = 'g' }: Props) 
         )}
       />
       <Text style={styles.value}>
-        {current}/{target}{unit}
+        {current}/{target}
+        <Text style={styles.unit}>{unit}</Text>
       </Text>
       <Text style={styles.label}>{label}</Text>
     </View>
@@ -45,17 +46,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   centerText: {
+    fontFamily: fonts.bold,
     fontSize: fontSize.xs,
-    fontWeight: '700',
     color: colors.text,
+    fontVariant: ['tabular-nums'],
   },
   value: {
+    fontFamily: fonts.semibold,
     fontSize: fontSize.sm,
-    fontWeight: '600',
     color: colors.text,
     marginTop: spacing.xs,
+    fontVariant: ['tabular-nums'],
+  },
+  unit: {
+    fontFamily: fonts.regular,
+    color: colors.textMuted,
   },
   label: {
+    fontFamily: fonts.medium,
     fontSize: fontSize.xs,
     color: colors.textMuted,
     marginTop: 2,

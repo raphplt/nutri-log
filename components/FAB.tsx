@@ -1,6 +1,6 @@
 import { Pressable, Text, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { colors, radii } from '@/constants/theme';
+import { colors, fonts, shadows } from '@/constants/theme';
 
 interface Props {
   onPress: () => void;
@@ -13,7 +13,10 @@ export function FAB({ onPress }: Props) {
   };
 
   return (
-    <Pressable onPress={handlePress} style={styles.fab}>
+    <Pressable
+      onPress={handlePress}
+      style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
+    >
       <Text style={styles.icon}>+</Text>
     </Pressable>
   );
@@ -24,22 +27,22 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 100,
     right: 24,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 56,
+    height: 56,
+    borderRadius: 9999,
     backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 8,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    ...shadows.fab,
+  },
+  fabPressed: {
+    transform: [{ scale: 0.96 }],
+    backgroundColor: colors.primaryDeep,
   },
   icon: {
-    fontSize: 32,
-    fontWeight: '400',
-    color: colors.text,
+    fontFamily: fonts.bold,
+    fontSize: 28,
+    color: colors.textInverse,
     marginTop: -2,
   },
 });

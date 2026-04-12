@@ -1,6 +1,6 @@
 import { Pressable, Text, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { colors, fontSize, spacing, radii } from '@/constants/theme';
+import { colors, fonts, fontSize, spacing, radii } from '@/constants/theme';
 
 interface Props {
   label?: string;
@@ -18,7 +18,11 @@ export function NextButton({ label = 'Suivant', onPress, disabled = false }: Pro
   return (
     <Pressable
       onPress={handlePress}
-      style={[styles.button, disabled && styles.buttonDisabled]}
+      style={({ pressed }) => [
+        styles.button,
+        pressed && !disabled && styles.buttonPressed,
+        disabled && styles.buttonDisabled,
+      ]}
     >
       <Text style={[styles.text, disabled && styles.textDisabled]}>{label}</Text>
     </Pressable>
@@ -28,20 +32,26 @@ export function NextButton({ label = 'Suivant', onPress, disabled = false }: Pro
 const styles = StyleSheet.create({
   button: {
     backgroundColor: colors.primary,
-    borderRadius: radii.sm,
-    paddingVertical: spacing.md,
+    borderRadius: radii.pill,
+    paddingVertical: 14,
     paddingHorizontal: spacing.xl,
     alignItems: 'center',
     marginHorizontal: spacing.xl,
     marginBottom: spacing.xl,
+    minHeight: 48,
+    justifyContent: 'center',
+  },
+  buttonPressed: {
+    backgroundColor: colors.primaryDeep,
+    transform: [{ scale: 0.98 }],
   },
   buttonDisabled: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceLight,
   },
   text: {
-    fontSize: fontSize.lg,
-    fontWeight: '600',
-    color: colors.text,
+    fontFamily: fonts.semibold,
+    fontSize: fontSize.md,
+    color: colors.textInverse,
   },
   textDisabled: {
     color: colors.textDim,

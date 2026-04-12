@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
-import { colors, fontSize, spacing, radii } from '@/constants/theme';
+import { colors, fonts, fontSize, spacing, radii } from '@/constants/theme';
 
 interface WeightPoint {
   date: string;
@@ -14,10 +14,7 @@ interface Props {
 export function WeightSparkline({ data }: Props) {
   if (data.length < 2) return null;
 
-  const chartData = data.map((d) => ({
-    value: d.weightKg,
-  }));
-
+  const chartData = data.map((d) => ({ value: d.weightKg }));
   const min = Math.min(...data.map((d) => d.weightKg));
   const max = Math.max(...data.map((d) => d.weightKg));
   const latest = data[data.length - 1].weightKg;
@@ -27,16 +24,20 @@ export function WeightSparkline({ data }: Props) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.label}>Poids</Text>
-        <Text style={styles.value}>
-          {latest.toFixed(1)} kg{' '}
-          <Text style={delta <= 0 ? styles.deltaNeg : styles.deltaPos}>
-            {delta > 0 ? '+' : ''}{delta.toFixed(1)}
+        <View style={styles.valueRow}>
+          <Text style={styles.value}>
+            {latest.toFixed(1)}
+            <Text style={styles.unit}> kg</Text>
           </Text>
-        </Text>
+          <Text style={[styles.delta, delta <= 0 ? styles.deltaNeg : styles.deltaPos]}>
+            {delta > 0 ? '+' : ''}
+            {delta.toFixed(1)}
+          </Text>
+        </View>
       </View>
       <LineChart
         data={chartData}
-        height={50}
+        height={56}
         width={280}
         color={colors.primary}
         thickness={2}
@@ -59,7 +60,7 @@ export function WeightSparkline({ data }: Props) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.surface,
-    borderRadius: radii.md,
+    borderRadius: radii.lg,
     padding: spacing.lg,
     overflow: 'hidden',
   },
@@ -70,15 +71,30 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   label: {
+    fontFamily: fonts.medium,
     fontSize: fontSize.sm,
     color: colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+  },
+  valueRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: spacing.sm,
   },
   value: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
+    fontSize: fontSize.display,
     color: colors.text,
+    fontVariant: ['tabular-nums'],
+  },
+  unit: {
+    fontFamily: fonts.regular,
+    fontSize: fontSize.md,
+    color: colors.textMuted,
+  },
+  delta: {
+    fontFamily: fonts.medium,
+    fontSize: fontSize.sm,
+    fontVariant: ['tabular-nums'],
   },
   deltaNeg: {
     color: colors.success,

@@ -1,6 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { colors, fontSize, spacing, radii } from '@/constants/theme';
+import { colors, fonts, fontSize, spacing, radii } from '@/constants/theme';
 
 interface Props {
   label: string;
@@ -32,16 +32,25 @@ export function StepperInput({ label, value, onChangeValue, min = 0, max = 7, un
       <View style={styles.row}>
         <Pressable
           onPress={decrement}
-          style={[styles.button, value <= min && styles.buttonDisabled]}
+          style={({ pressed }) => [
+            styles.button,
+            value <= min && styles.buttonDisabled,
+            pressed && value > min && styles.buttonPressed,
+          ]}
         >
-          <Text style={[styles.buttonText, value <= min && styles.buttonTextDisabled]}>-</Text>
+          <Text style={[styles.buttonText, value <= min && styles.buttonTextDisabled]}>−</Text>
         </Pressable>
         <Text style={styles.value}>
-          {value}{unit ? ` ${unit}` : ''}
+          {value}
+          {unit ? <Text style={styles.unit}>{` ${unit}`}</Text> : null}
         </Text>
         <Pressable
           onPress={increment}
-          style={[styles.button, value >= max && styles.buttonDisabled]}
+          style={({ pressed }) => [
+            styles.button,
+            value >= max && styles.buttonDisabled,
+            pressed && value < max && styles.buttonPressed,
+          ]}
         >
           <Text style={[styles.buttonText, value >= max && styles.buttonTextDisabled]}>+</Text>
         </Pressable>
@@ -55,11 +64,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   label: {
+    fontFamily: fonts.medium,
     fontSize: fontSize.sm,
     color: colors.textMuted,
     marginBottom: spacing.lg,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
   },
   row: {
     flexDirection: 'row',
@@ -67,31 +75,38 @@ const styles = StyleSheet.create({
     gap: spacing.xl,
   },
   button: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.primary,
+    width: 48,
+    height: 48,
+    borderRadius: radii.md,
+    backgroundColor: colors.surfaceLight,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  buttonPressed: {
+    backgroundColor: colors.surfaceHover,
+  },
   buttonDisabled: {
-    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
   buttonText: {
-    fontSize: fontSize.xxl,
-    fontWeight: '600',
-    color: colors.primary,
+    fontFamily: fonts.semibold,
+    fontSize: fontSize.xl,
+    color: colors.text,
   },
   buttonTextDisabled: {
     color: colors.textDim,
   },
   value: {
+    fontFamily: fonts.bold,
     fontSize: fontSize.hero,
-    fontWeight: '700',
     color: colors.text,
     minWidth: 80,
     textAlign: 'center',
+    fontVariant: ['tabular-nums'],
+  },
+  unit: {
+    fontFamily: fonts.medium,
+    fontSize: fontSize.lg,
+    color: colors.textMuted,
   },
 });

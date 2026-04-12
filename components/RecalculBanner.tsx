@@ -1,6 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { colors, fontSize, spacing, radii } from '@/constants/theme';
+import { colors, fonts, fontSize, spacing, radii } from '@/constants/theme';
 
 interface Props {
   deltaKg: number;
@@ -12,8 +12,8 @@ export function RecalculBanner({ deltaKg, onRecalculate, onDismiss }: Props) {
   return (
     <View style={styles.banner}>
       <Text style={styles.text}>
-        Ton poids a changé de {deltaKg > 0 ? '+' : ''}{deltaKg.toFixed(1)} kg.
-        {'\n'}Recalculer tes objectifs ?
+        Ton poids a changé de {deltaKg > 0 ? '+' : ''}
+        {deltaKg.toFixed(1)} kg.{'\n'}Recalculer tes objectifs ?
       </Text>
       <View style={styles.actions}>
         <Pressable
@@ -21,7 +21,7 @@ export function RecalculBanner({ deltaKg, onRecalculate, onDismiss }: Props) {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             onRecalculate();
           }}
-          style={styles.primaryBtn}
+          style={({ pressed }) => [styles.primaryBtn, pressed && styles.primaryBtnPressed]}
         >
           <Text style={styles.primaryBtnText}>Recalculer</Text>
         </Pressable>
@@ -35,15 +35,16 @@ export function RecalculBanner({ deltaKg, onRecalculate, onDismiss }: Props) {
 
 const styles = StyleSheet.create({
   banner: {
-    backgroundColor: colors.warning + '15',
-    borderRadius: radii.md,
+    backgroundColor: colors.surfaceLight,
+    borderRadius: radii.lg,
     padding: spacing.lg,
     marginHorizontal: spacing.xl,
     marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.warning + '40',
+    borderLeftWidth: 3,
+    borderLeftColor: colors.warning,
   },
   text: {
+    fontFamily: fonts.regular,
     fontSize: fontSize.sm,
     color: colors.text,
     lineHeight: 20,
@@ -54,21 +55,29 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   primaryBtn: {
-    backgroundColor: colors.warning,
-    borderRadius: radii.sm,
+    backgroundColor: colors.primary,
+    borderRadius: radii.pill,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
+    minHeight: 40,
+    justifyContent: 'center',
+  },
+  primaryBtnPressed: {
+    backgroundColor: colors.primaryDeep,
   },
   primaryBtnText: {
+    fontFamily: fonts.semibold,
     fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: '#000',
+    color: colors.textInverse,
   },
   secondaryBtn: {
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
+    minHeight: 40,
+    justifyContent: 'center',
   },
   secondaryBtnText: {
+    fontFamily: fonts.medium,
     fontSize: fontSize.sm,
     color: colors.textMuted,
   },

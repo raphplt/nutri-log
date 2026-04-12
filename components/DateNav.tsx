@@ -2,7 +2,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import * as Haptics from 'expo-haptics';
 import { formatDateLabel, shiftDate, todayString } from '@/lib/date';
-import { colors, fontSize, spacing } from '@/constants/theme';
+import { colors, fonts, fontSize, spacing, radii } from '@/constants/theme';
 
 interface Props {
   date: string;
@@ -19,16 +19,21 @@ export function DateNav({ date, onDateChange }: Props) {
 
   return (
     <View style={styles.container}>
-      <Pressable onPress={() => go(-1)} hitSlop={12}>
-        <FontAwesome name="chevron-left" size={16} color={colors.textMuted} />
+      <Pressable onPress={() => go(-1)} hitSlop={12} style={styles.arrow}>
+        <FontAwesome name="chevron-left" size={14} color={colors.textMuted} />
       </Pressable>
-      <Pressable onPress={() => !isToday && onDateChange(todayString())}>
-        <Text style={styles.label}>{formatDateLabel(date)}</Text>
+      <Pressable
+        onPress={() => !isToday && onDateChange(todayString())}
+        style={[styles.labelWrap, isToday && styles.labelWrapToday]}
+      >
+        <Text style={[styles.label, isToday && styles.labelToday]}>
+          {formatDateLabel(date)}
+        </Text>
       </Pressable>
-      <Pressable onPress={() => go(1)} hitSlop={12} disabled={isToday}>
+      <Pressable onPress={() => go(1)} hitSlop={12} disabled={isToday} style={styles.arrow}>
         <FontAwesome
           name="chevron-right"
-          size={16}
+          size={14}
           color={isToday ? colors.border : colors.textMuted}
         />
       </Pressable>
@@ -44,9 +49,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
   },
+  arrow: {
+    padding: spacing.sm,
+  },
+  labelWrap: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.pill,
+  },
+  labelWrapToday: {
+    backgroundColor: colors.primaryGlow,
+  },
   label: {
+    fontFamily: fonts.semibold,
     fontSize: fontSize.lg,
-    fontWeight: '600',
     color: colors.text,
+  },
+  labelToday: {
+    color: colors.primary,
   },
 });

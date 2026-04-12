@@ -3,9 +3,16 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
 import { db } from '@/db/client';
 import migrations from '@/drizzle/migrations';
-import { colors } from '@/constants/theme';
+import { colors, fonts } from '@/constants/theme';
 import 'react-native-reanimated';
 
 export { ErrorBoundary } from 'expo-router';
@@ -14,12 +21,18 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { success, error } = useMigrations(db, migrations);
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
 
   useEffect(() => {
-    if (success) {
+    if (success && fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [success]);
+  }, [success, fontsLoaded]);
 
   if (error) {
     return (
@@ -29,7 +42,7 @@ export default function RootLayout() {
     );
   }
 
-  if (!success) {
+  if (!success || !fontsLoaded) {
     return null; // splash screen visible
   }
 
@@ -38,6 +51,7 @@ export default function RootLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: colors.background },
         headerTintColor: colors.text,
+        headerTitleStyle: { fontFamily: fonts.semibold },
         contentStyle: { backgroundColor: colors.background },
       }}
     >
@@ -61,5 +75,6 @@ const styles = StyleSheet.create({
   error: {
     color: colors.danger,
     fontSize: 16,
+    fontFamily: fonts.medium,
   },
 });

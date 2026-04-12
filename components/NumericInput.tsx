@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
-import { colors, fontSize, spacing, radii } from '@/constants/theme';
+import { colors, fonts, fontSize, spacing, radii } from '@/constants/theme';
 
 interface Props {
   label: string;
@@ -12,26 +13,45 @@ interface Props {
 }
 
 export function NumericInput({ label, value, onChangeValue, unit, decimal = false, min, max }: Props) {
-  const handleChange = (text: string) => {
-    const cleaned = text.replace(decimal ? /[^0-9.]/g : /[^0-9]/g, '');
+  const [focused, setFocused] = useState(false);
+  const [text, setText] = useState(String(value));
+
+  const handleChange = (next: string) => {
+    const cleaned = next.replace(decimal ? /[^0-9.]/g : /[^0-9]/g, '');
+    setText(cleaned);
     if (cleaned === '') return;
     let num = decimal ? parseFloat(cleaned) : parseInt(cleaned, 10);
     if (isNaN(num)) return;
+    if (max !== undefined && num > max) num = max;
+    onChangeValue(num);
+  };
+
+  const handleBlur = () => {
+    setFocused(false);
+    let num = decimal ? parseFloat(text) : parseInt(text, 10);
+    if (isNaN(num) || text === '') num = min ?? 0;
     if (min !== undefined && num < min) num = min;
     if (max !== undefined && num > max) num = max;
+    setText(String(num));
     onChangeValue(num);
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <View style={styles.inputRow}>
+      <View style={[styles.inputRow, focused && styles.inputRowFocused]}>
         <TextInput
           style={styles.input}
-          value={String(value)}
+          value={focused ? text : String(value)}
           onChangeText={handleChange}
+          onFocus={() => {
+            setFocused(true);
+            setText(String(value));
+          }}
+          onBlur={handleBlur}
           keyboardType={decimal ? 'decimal-pad' : 'number-pad'}
           selectTextOnFocus
+          placeholderTextColor={colors.textDim}
         />
         {unit ? <Text style={styles.unit}>{unit}</Text> : null}
       </View>
@@ -44,29 +64,34 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   label: {
+    fontFamily: fonts.medium,
     fontSize: fontSize.sm,
     color: colors.textMuted,
-    marginBottom: spacing.xs,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+    marginBottom: spacing.sm,
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.md,
+    minHeight: 48,
+  },
+  inputRowFocused: {
+    borderColor: colors.primary,
   },
   input: {
     flex: 1,
-    backgroundColor: colors.surface,
-    borderRadius: radii.sm,
-    padding: spacing.md,
+    fontFamily: fonts.semibold,
     fontSize: fontSize.xl,
-    fontWeight: '600',
     color: colors.text,
-    borderWidth: 1,
-    borderColor: colors.border,
+    paddingVertical: spacing.md,
   },
   unit: {
-    fontSize: fontSize.lg,
+    fontFamily: fonts.regular,
+    fontSize: fontSize.md,
     color: colors.textMuted,
     marginLeft: spacing.sm,
   },

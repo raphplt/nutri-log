@@ -8,7 +8,7 @@ interface Props {
 }
 
 export function ProgressBar({ current, total }: Props) {
-  const progress = current / total;
+  const progress = total > 0 ? Math.min(current / total, 1) : 0;
 
   const animatedStyle = useAnimatedStyle(() => ({
     width: withTiming(`${progress * 100}%`, { duration: 300 }),
@@ -23,8 +23,8 @@ export function ProgressBar({ current, total }: Props) {
 
 const styles = StyleSheet.create({
   track: {
-    height: 4,
-    backgroundColor: colors.surface,
+    height: 6,
+    backgroundColor: colors.surfaceLight,
     borderRadius: radii.full,
     marginHorizontal: spacing.xl,
     marginTop: spacing.lg,
