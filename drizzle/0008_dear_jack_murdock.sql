@@ -1,0 +1,1 @@
+ALTER TABLE `food_servings` ADD `is_unit` integer DEFAULT false NOT NULL;

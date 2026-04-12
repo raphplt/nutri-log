@@ -126,6 +126,7 @@ export const foodServings = sqliteTable(
 		isDefault: integer("is_default", { mode: "boolean" })
 			.notNull()
 			.default(false),
+		isUnit: integer("is_unit", { mode: "boolean" }).notNull().default(false),
 	},
 	(table) => [index("idx_food_servings_food_id").on(table.foodId)],
 );

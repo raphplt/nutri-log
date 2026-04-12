@@ -17,6 +17,7 @@ import {
 import { FoodQualityBadges } from "@/components/FoodQualityBadges";
 import { NextButton } from "@/components/NextButton";
 import { SelectCard } from "@/components/SelectCard";
+import { StepperInput } from "@/components/StepperInput";
 import { colors, fontSize, radii, spacing } from "@/constants/theme";
 import { db } from "@/db/client";
 import { foods } from "@/db/schema";
@@ -34,6 +35,11 @@ function isFoodIncomplete(food: FoodRow): boolean {
 			food.proteinPer100g === 0 ||
 			food.carbsPer100g === 0)
 	);
+}
+
+/** "1 œuf (M)" → "œuf (M)" — keep only the noun for the stepper label. */
+function stripLeadingCount(label: string): string {
+	return label.replace(/^[\d/.,]+\s*/, "").trim();
 }
 
 type MealType = "breakfast" | "lunch" | "dinner" | "snack";
@@ -274,22 +280,34 @@ export default function ConfirmScreen() {
 						{t("common.grams")}
 					</Text>
 					{selectedServing ? (
-						<>
-							<Slider
-								style={styles.slider}
-								value={multiplier}
-								onValueChange={setMultiplier}
-								minimumValue={0.25}
-								maximumValue={5}
-								step={0.25}
-								minimumTrackTintColor={colors.primary}
-								maximumTrackTintColor={colors.border}
-								thumbTintColor={colors.primary}
-							/>
-							<Text style={styles.multiplierHint}>
-								×{multiplier.toFixed(2)}
-							</Text>
-						</>
+						selectedServing.isUnit ? (
+							<View style={styles.stepperWrap}>
+								<StepperInput
+									label={stripLeadingCount(selectedServing.label)}
+									value={Math.max(1, Math.round(multiplier))}
+									onChangeValue={setMultiplier}
+									min={1}
+									max={20}
+								/>
+							</View>
+						) : (
+							<>
+								<Slider
+									style={styles.slider}
+									value={multiplier}
+									onValueChange={setMultiplier}
+									minimumValue={0.25}
+									maximumValue={5}
+									step={0.25}
+									minimumTrackTintColor={colors.primary}
+									maximumTrackTintColor={colors.border}
+									thumbTintColor={colors.primary}
+								/>
+								<Text style={styles.multiplierHint}>
+									×{multiplier.toFixed(2)}
+								</Text>
+							</>
+						)
 					) : (
 						<Slider
 							style={styles.slider}
@@ -492,6 +510,10 @@ const styles = StyleSheet.create({
 		fontWeight: "600",
 	},
 	portionChipTextSelected: { color: colors.primaryLight },
+	stepperWrap: {
+		marginTop: spacing.md,
+		alignItems: "center",
+	},
 	multiplierHint: {
 		textAlign: "center",
 		color: colors.textMuted,

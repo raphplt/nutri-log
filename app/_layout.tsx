@@ -21,6 +21,7 @@ import { getMeta } from "@/lib/app-meta";
 import { seedCiqualIfNeeded } from "@/lib/ciqual-seed";
 import i18n, { type LanguagePreference, resolveLanguage } from "@/lib/i18n";
 import { migrateMacrosIfNeeded } from "@/lib/macro-migration";
+import { seedServingPresetsIfNeeded } from "@/lib/serving-service";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -62,6 +63,7 @@ export default function RootLayout() {
 				setSeeding(true);
 				await seedCiqualIfNeeded();
 				await migrateMacrosIfNeeded();
+				await seedServingPresetsIfNeeded();
 			} finally {
 				if (!cancelled) {
 					setSeeding(false);

@@ -9,7 +9,7 @@ import {
 	searchProducts,
 } from "./off-api";
 import { searchLocal } from "./search-service";
-import { ensureServings } from "./serving-service";
+import { applyServingPresets, ensureServings } from "./serving-service";
 
 const OFF_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -82,6 +82,7 @@ export async function getOrFetchByBarcode(
 				local.id,
 				parseServing(product.servingG, product.servingSize),
 			);
+			await applyServingPresets(local.id, product.name);
 			const [updated] = await db
 				.select()
 				.from(foods)
@@ -96,6 +97,7 @@ export async function getOrFetchByBarcode(
 			values.id,
 			parseServing(product.servingG, product.servingSize),
 		);
+		await applyServingPresets(values.id, values.name);
 		return { ...values };
 	} catch {
 		return local ?? null;
