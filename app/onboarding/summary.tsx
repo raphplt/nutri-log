@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NextButton } from "@/components/NextButton";
@@ -16,17 +17,10 @@ import {
 	macrosFromPercentages,
 } from "@/lib/tdee";
 
-const PRESETS: { value: MacroPreset; title: string; detail: string }[] = [
-	{ value: "balanced", title: "Équilibré", detail: "30% P / 40% G / 30% L" },
-	{
-		value: "high_protein",
-		title: "High protein",
-		detail: "40% P / 35% G / 25% L",
-	},
-	{ value: "low_carb", title: "Low carb", detail: "35% P / 25% G / 40% L" },
-];
+const PRESET_VALUES: MacroPreset[] = ["balanced", "high_protein", "low_carb"];
 
 export default function SummaryScreen() {
+	const { t } = useTranslation();
 	const router = useRouter();
 	const { data, update } = useOnboarding();
 
@@ -47,53 +41,61 @@ export default function SummaryScreen() {
 		<SafeAreaView style={styles.safe}>
 			<ProgressBar current={5} total={6} />
 			<ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-				<Text style={styles.title}>Tes objectifs</Text>
+				<Text style={styles.title}>{t("onboarding.summaryTitle")}</Text>
 
 				<View style={styles.statsRow}>
-					<StatBox label="BMR" value={`${Math.round(bmr)}`} unit="kcal" />
-					<StatBox label="TDEE" value={`${tdee}`} unit="kcal" />
+					<StatBox
+						label={t("onboarding.bmr")}
+						value={`${Math.round(bmr)}`}
+						unit={t("common.kcal")}
+					/>
+					<StatBox
+						label={t("onboarding.tdee")}
+						value={`${tdee}`}
+						unit={t("common.kcal")}
+					/>
 				</View>
 
 				<View style={styles.targetCard}>
-					<Text style={styles.targetLabel}>OBJECTIF QUOTIDIEN</Text>
+					<Text style={styles.targetLabel}>{t("onboarding.dailyGoal")}</Text>
 					<Text style={styles.targetValue}>{targetKcal}</Text>
-					<Text style={styles.targetUnit}>kcal / jour</Text>
+					<Text style={styles.targetUnit}>{t("onboarding.kcalPerDay")}</Text>
 				</View>
 
 				<NumericInput
-					label="Ajuster manuellement"
+					label={t("onboarding.adjustManually")}
 					value={data.kcalOverride ?? calculateTargetKcal(tdee, data.goalRate)}
 					onChangeValue={(v) => update({ kcalOverride: v })}
-					unit="kcal"
+					unit={t("common.kcal")}
 					min={1000}
 					max={6000}
 				/>
 
-				<Text style={styles.subtitle}>Répartition macros</Text>
-				{PRESETS.map((p) => (
+				<Text style={styles.subtitle}>{t("macro.distribution")}</Text>
+				{PRESET_VALUES.map((value) => (
 					<SelectCard
-						key={p.value}
-						title={p.title}
-						description={p.detail}
-						selected={data.macroPreset === p.value}
-						onPress={() => update({ macroPreset: p.value })}
+						key={value}
+						title={t(`macro.${value}` as const)}
+						description={t(`macro.${value}Detail` as const)}
+						selected={data.macroPreset === value}
+						onPress={() => update({ macroPreset: value })}
 					/>
 				))}
 
 				{preset && (
 					<View style={styles.macroRow}>
 						<MacroBox
-							label="Protéines"
+							label={t("macro.protein")}
 							grams={macros.proteinG}
 							color={colors.primary}
 						/>
 						<MacroBox
-							label="Glucides"
+							label={t("macro.carbs")}
 							grams={macros.carbsG}
 							color={colors.success}
 						/>
 						<MacroBox
-							label="Lipides"
+							label={t("macro.fat")}
 							grams={macros.fatG}
 							color={colors.warning}
 						/>
@@ -132,10 +134,14 @@ function MacroBox({
 	grams: number;
 	color: string;
 }) {
+	const { t } = useTranslation();
 	return (
 		<View style={styles.macroBox}>
 			<View style={[styles.macroDot, { backgroundColor: color }]} />
-			<Text style={styles.macroGrams}>{grams}g</Text>
+			<Text style={styles.macroGrams}>
+				{grams}
+				{t("common.grams")}
+			</Text>
 			<Text style={styles.macroLabel}>{label}</Text>
 		</View>
 	);
@@ -187,13 +193,13 @@ const styles = StyleSheet.create({
 		color: colors.textDim,
 	},
 	targetCard: {
-		backgroundColor: colors.primary + "15",
+		backgroundColor: `${colors.primary}15`,
 		borderRadius: radii.md,
 		padding: spacing.xl,
 		alignItems: "center",
 		marginBottom: spacing.xl,
 		borderWidth: 1,
-		borderColor: colors.primary + "40",
+		borderColor: `${colors.primary}40`,
 	},
 	targetLabel: {
 		fontSize: fontSize.xs,

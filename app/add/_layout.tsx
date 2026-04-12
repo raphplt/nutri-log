@@ -1,20 +1,25 @@
-import { Stack } from 'expo-router';
-import { colors } from '@/constants/theme';
+import { Stack } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { colors } from "@/constants/theme";
 
 export default function AddLayout() {
-  return (
-    <Stack
-      screenOptions={{
-        headerStyle: { backgroundColor: colors.background },
-        headerTintColor: colors.text,
-        contentStyle: { backgroundColor: colors.background },
-      }}
-    >
-      <Stack.Screen name="index" options={{ title: 'Ajouter' }} />
-      <Stack.Screen name="scan" options={{ title: 'Scanner', headerShown: false }} />
-      <Stack.Screen name="search" options={{ title: 'Rechercher' }} />
-      <Stack.Screen name="quick" options={{ title: 'Ajout rapide' }} />
-      <Stack.Screen name="confirm" options={{ title: 'Confirmer' }} />
-    </Stack>
-  );
+	const { t } = useTranslation();
+	return (
+		<Stack
+			screenOptions={{
+				headerStyle: { backgroundColor: colors.background },
+				headerTintColor: colors.text,
+				contentStyle: { backgroundColor: colors.background },
+			}}
+		>
+			<Stack.Screen name="index" options={{ title: t("nav.add") }} />
+			<Stack.Screen
+				name="scan"
+				options={{ title: t("nav.scan"), headerShown: false }}
+			/>
+			<Stack.Screen name="search" options={{ title: t("nav.search") }} />
+			<Stack.Screen name="quick" options={{ title: t("nav.quick") }} />
+			<Stack.Screen name="confirm" options={{ title: t("nav.confirm") }} />
+		</Stack>
+	);
 }

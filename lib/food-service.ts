@@ -1,99 +1,150 @@
-import { eq, desc, like, sql } from 'drizzle-orm';
-import { db } from '@/db/client';
-import { foods } from '@/db/schema';
-import { createId } from './nanoid';
-import { fetchProductByBarcode, searchProducts, type OFFProduct } from './off-api';
+import { desc, eq, sql } from "drizzle-orm";
+import { db } from "@/db/client";
+import { foods } from "@/db/schema";
+import { createId } from "./nanoid";
+import {
+	fetchProductByBarcode,
+	type OFFProduct,
+	searchProducts,
+} from "./off-api";
+import { searchLocal } from "./search-service";
+
+const OFF_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 function offToFoodValues(p: OFFProduct) {
-  return {
-    id: createId(),
-    source: 'off' as const,
-    barcode: p.code,
-    name: p.name,
-    brand: p.brand,
-    imageUrl: p.imageUrl,
-    kcalPer100g: p.kcalPer100g,
-    proteinPer100g: p.proteinPer100g,
-    carbsPer100g: p.carbsPer100g,
-    fatPer100g: p.fatPer100g,
-    fiberPer100g: p.fiberPer100g,
-    defaultServingG: p.servingG ?? 100,
-    useCount: 0,
-    lastUsedAt: null,
-    createdAt: new Date().toISOString(),
-  };
+	const now = new Date().toISOString();
+	return {
+		id: createId(),
+		source: "off" as const,
+		barcode: p.code,
+		name: p.name,
+		brand: p.brand,
+		imageUrl: p.imageUrl,
+		kcalPer100g: p.kcalPer100g,
+		proteinPer100g: p.proteinPer100g,
+		carbsPer100g: p.carbsPer100g,
+		fatPer100g: p.fatPer100g,
+		fiberPer100g: p.fiberPer100g,
+		defaultServingG: p.servingG ?? 100,
+		useCount: 0,
+		lastUsedAt: null,
+		lastOffFetchAt: now,
+		createdAt: now,
+	};
 }
 
 export type FoodRow = typeof foods.$inferSelect;
 
-/** Lookup local cache first, then fetch OFF if not found. Returns the food row. */
+function isFresh(row: FoodRow): boolean {
+	if (!row.lastOffFetchAt) return false;
+	return Date.now() - new Date(row.lastOffFetchAt).getTime() < OFF_CACHE_TTL_MS;
+}
+
 export async function getOrFetchByBarcode(
-  barcode: string,
-  signal?: AbortSignal,
+	barcode: string,
+	signal?: AbortSignal,
 ): Promise<FoodRow | null> {
-  // Check local cache
-  const [local] = await db.select().from(foods).where(eq(foods.barcode, barcode)).limit(1);
-  if (local) return local;
+	const [local] = await db
+		.select()
+		.from(foods)
+		.where(eq(foods.barcode, barcode))
+		.limit(1);
+	if (local && isFresh(local)) return local;
 
-  // Fetch from OFF
-  const product = await fetchProductByBarcode(barcode, signal);
-  if (!product) return null;
+	try {
+		const product = await fetchProductByBarcode(barcode, signal);
+		if (!product) return local ?? null;
 
-  // Insert into cache
-  const values = offToFoodValues(product);
-  await db.insert(foods).values(values);
+		if (local) {
+			const now = new Date().toISOString();
+			await db
+				.update(foods)
+				.set({
+					name: product.name,
+					brand: product.brand,
+					imageUrl: product.imageUrl,
+					kcalPer100g: product.kcalPer100g,
+					proteinPer100g: product.proteinPer100g,
+					carbsPer100g: product.carbsPer100g,
+					fatPer100g: product.fatPer100g,
+					fiberPer100g: product.fiberPer100g,
+					defaultServingG: product.servingG ?? local.defaultServingG ?? 100,
+					lastOffFetchAt: now,
+				})
+				.where(eq(foods.id, local.id));
+			const [updated] = await db.select().from(foods).where(eq(foods.id, local.id)).limit(1);
+			return updated ?? local;
+		}
 
-  return { ...values, useCount: 0, lastUsedAt: null };
+		const values = offToFoodValues(product);
+		await db.insert(foods).values(values);
+		return { ...values };
+	} catch {
+		return local ?? null;
+	}
 }
 
-/** Hybrid search: local foods by useCount first, then OFF API as fallback. */
 export async function searchFoods(
-  query: string,
-  signal?: AbortSignal,
+	query: string,
+	signal?: AbortSignal,
 ): Promise<FoodRow[]> {
-  // Local search
-  const localResults = await db
-    .select()
-    .from(foods)
-    .where(like(foods.name, `%${query}%`))
-    .orderBy(desc(foods.useCount))
-    .limit(10);
+	const localResults = await searchLocal(query, { signal });
 
-  // OFF search (in parallel, but don't block on error)
-  let offResults: FoodRow[] = [];
-  try {
-    const offProducts = await searchProducts(query, 1, signal);
-    // Filter out products already in local results
-    const localBarcodes = new Set(localResults.map((f) => f.barcode).filter(Boolean));
-    for (const p of offProducts) {
-      if (localBarcodes.has(p.code)) continue;
-      const values = offToFoodValues(p);
-      offResults.push({ ...values, useCount: 0, lastUsedAt: null });
-    }
-  } catch {
-    // Network error is fine, we still have local results
-  }
+	const offResults: FoodRow[] = [];
+	try {
+		const offProducts = await searchProducts(query, { signal });
+		const localBarcodes = new Set(localResults.map((f) => f.barcode).filter(Boolean));
+		for (const p of offProducts) {
+			if (localBarcodes.has(p.code)) continue;
+			offResults.push(offToFoodValues(p));
+		}
+	} catch {
+		// Network failure is acceptable — local results still returned
+	}
 
-  return [...localResults, ...offResults];
+	return [...localResults, ...offResults];
 }
 
-/** Increment useCount and update lastUsedAt for a food. */
+export async function searchFoodsLocal(
+	query: string,
+	signal?: AbortSignal,
+): Promise<FoodRow[]> {
+	return searchLocal(query, { signal });
+}
+
+export async function searchFoodsRemote(
+	query: string,
+	existingBarcodes: Set<string>,
+	signal?: AbortSignal,
+): Promise<FoodRow[]> {
+	try {
+		const offProducts = await searchProducts(query, { signal });
+		const out: FoodRow[] = [];
+		for (const p of offProducts) {
+			if (existingBarcodes.has(p.code)) continue;
+			out.push(offToFoodValues(p));
+		}
+		return out;
+	} catch {
+		return [];
+	}
+}
+
 export async function incrementUseCount(foodId: string) {
-  await db
-    .update(foods)
-    .set({
-      useCount: sql`${foods.useCount} + 1`,
-      lastUsedAt: new Date().toISOString(),
-    })
-    .where(eq(foods.id, foodId));
+	await db
+		.update(foods)
+		.set({
+			useCount: sql`${foods.useCount} + 1`,
+			lastUsedAt: new Date().toISOString(),
+		})
+		.where(eq(foods.id, foodId));
 }
 
-/** Get top N most used foods. */
 export async function getFrequentFoods(limit = 10): Promise<FoodRow[]> {
-  return db
-    .select()
-    .from(foods)
-    .where(sql`${foods.useCount} > 0`)
-    .orderBy(desc(foods.useCount))
-    .limit(limit);
+	return db
+		.select()
+		.from(foods)
+		.where(sql`${foods.useCount} > 0`)
+		.orderBy(desc(foods.useCount))
+		.limit(limit);
 }

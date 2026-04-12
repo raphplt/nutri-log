@@ -1,47 +1,46 @@
-import * as Notifications from 'expo-notifications';
-
-const MEAL_LABELS: Record<string, string> = {
-  breakfast: 'petit-déjeuner',
-  lunch: 'déjeuner',
-  snack: 'goûter',
-  dinner: 'dîner',
-};
+import * as Notifications from "expo-notifications";
+import i18n from "@/lib/i18n";
 
 interface ReminderConfig {
-  mealType: string;
-  enabled: boolean;
-  hour: number;
-  minute: number;
+	mealType: string;
+	enabled: boolean;
+	hour: number;
+	minute: number;
 }
 
 export async function scheduleAllReminders(settings: ReminderConfig[]) {
-  await Notifications.cancelAllScheduledNotificationsAsync();
+	await Notifications.cancelAllScheduledNotificationsAsync();
 
-  for (const s of settings) {
-    if (!s.enabled) continue;
+	for (const s of settings) {
+		if (!s.enabled) continue;
 
-    const label = MEAL_LABELS[s.mealType] ?? s.mealType;
+		const title = i18n.t(`meal.${s.mealType}` as const, {
+			defaultValue: s.mealType,
+		});
+		const bodyLabel = i18n.t(`meal.${s.mealType}_lower` as const, {
+			defaultValue: s.mealType,
+		});
 
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: `${label.charAt(0).toUpperCase() + label.slice(1)}`,
-        body: `N'oublie pas de logger ton ${label} !`,
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DAILY,
-        hour: s.hour,
-        minute: s.minute,
-      },
-    });
-  }
+		await Notifications.scheduleNotificationAsync({
+			content: {
+				title,
+				body: i18n.t("reminders.body", { label: bodyLabel }),
+			},
+			trigger: {
+				type: Notifications.SchedulableTriggerInputTypes.DAILY,
+				hour: s.hour,
+				minute: s.minute,
+			},
+		});
+	}
 }
 
 export async function requestNotificationPermissions(): Promise<boolean> {
-  const { status: existing } = await Notifications.getPermissionsAsync();
-  if (existing === 'granted') return true;
+	const { status: existing } = await Notifications.getPermissionsAsync();
+	if (existing === "granted") return true;
 
-  const { status } = await Notifications.requestPermissionsAsync({
-    ios: { allowAlert: true, allowBadge: true, allowSound: true },
-  });
-  return status === 'granted';
+	const { status } = await Notifications.requestPermissionsAsync({
+		ios: { allowAlert: true, allowBadge: true, allowSound: true },
+	});
+	return status === "granted";
 }

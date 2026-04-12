@@ -8,6 +8,27 @@
       "when": 1775678501450,
       "tag": "0000_third_meltdown",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1775990802229,
+      "tag": "0001_nostalgic_tomas",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1775991349965,
+      "tag": "0002_illegal_tomorrow_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1775991429867,
+      "tag": "0003_fts_foods",
+      "breakpoints": true
     }
   ]
 }

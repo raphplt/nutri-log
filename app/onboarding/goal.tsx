@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NextButton } from "@/components/NextButton";
@@ -8,50 +9,79 @@ import { colors, fontSize, spacing } from "@/constants/theme";
 import { useOnboarding } from "@/lib/onboarding-store";
 import type { Goal } from "@/lib/tdee";
 
-const GOALS: { value: Goal; title: string; description: string }[] = [
-	{
-		value: "lose",
-		title: "Perdre du poids",
-		description: "Déficit calorique pour brûler du gras",
-	},
-	{
-		value: "maintain",
-		title: "Maintenir",
-		description: "Garder ton poids actuel",
-	},
-	{
-		value: "gain",
-		title: "Prendre du poids",
-		description: "Surplus calorique pour construire du muscle",
-	},
-];
-
-const LOSE_RATES = [
-	{ value: -0.1, label: "-0.1 kg/sem", description: "Très lent" },
-	{ value: -0.25, label: "-0.25 kg/sem", description: "Lent" },
-	{ value: -0.5, label: "-0.5 kg/sem", description: "Modéré" },
-	{ value: -0.75, label: "-0.75 kg/sem", description: "Rapide" },
-	{ value: -1, label: "-1 kg/sem", description: "Agressif" },
-	{ value: -1.25, label: "-1.25 kg/sem", description: "Très agressif" },
-];
-
-const GAIN_RATES = [
-	{ value: 0.1, label: "+0.1 kg/sem", description: "Très lean" },
-	{ value: 0.25, label: "+0.25 kg/sem", description: "Lean bulk" },
-	{ value: 0.5, label: "+0.5 kg/sem", description: "Bulk" },
-	{ value: 0.75, label: "+0.75 kg/sem", description: "Bulk agressif" },
-];
-
 export default function GoalScreen() {
+	const { t } = useTranslation();
 	const router = useRouter();
 	const { data, update } = useOnboarding();
 
+	const goals: { value: Goal; title: string; description: string }[] = [
+		{ value: "lose", title: t("goal.lose"), description: t("goal.loseDesc") },
+		{
+			value: "maintain",
+			title: t("goal.maintain"),
+			description: t("goal.maintainDesc"),
+		},
+		{ value: "gain", title: t("goal.gain"), description: t("goal.gainDesc") },
+	];
+
+	const loseRates = [
+		{
+			value: -0.1,
+			label: `-0.1 ${t("common.kg")}${t("common.perWeek")}`,
+			description: t("onboarding.loseRates.veryslow"),
+		},
+		{
+			value: -0.25,
+			label: `-0.25 ${t("common.kg")}${t("common.perWeek")}`,
+			description: t("onboarding.loseRates.slow"),
+		},
+		{
+			value: -0.5,
+			label: `-0.5 ${t("common.kg")}${t("common.perWeek")}`,
+			description: t("onboarding.loseRates.moderate"),
+		},
+		{
+			value: -0.75,
+			label: `-0.75 ${t("common.kg")}${t("common.perWeek")}`,
+			description: t("onboarding.loseRates.fast"),
+		},
+		{
+			value: -1,
+			label: `-1 ${t("common.kg")}${t("common.perWeek")}`,
+			description: t("onboarding.loseRates.aggressive"),
+		},
+		{
+			value: -1.25,
+			label: `-1.25 ${t("common.kg")}${t("common.perWeek")}`,
+			description: t("onboarding.loseRates.veryaggressive"),
+		},
+	];
+
+	const gainRates = [
+		{
+			value: 0.1,
+			label: `+0.1 ${t("common.kg")}${t("common.perWeek")}`,
+			description: t("onboarding.gainRates.verylean"),
+		},
+		{
+			value: 0.25,
+			label: `+0.25 ${t("common.kg")}${t("common.perWeek")}`,
+			description: t("onboarding.gainRates.leanbulk"),
+		},
+		{
+			value: 0.5,
+			label: `+0.5 ${t("common.kg")}${t("common.perWeek")}`,
+			description: t("onboarding.gainRates.bulk"),
+		},
+		{
+			value: 0.75,
+			label: `+0.75 ${t("common.kg")}${t("common.perWeek")}`,
+			description: t("onboarding.gainRates.aggressivebulk"),
+		},
+	];
+
 	const rates =
-		data.goal === "lose"
-			? LOSE_RATES
-			: data.goal === "gain"
-				? GAIN_RATES
-				: null;
+		data.goal === "lose" ? loseRates : data.goal === "gain" ? gainRates : null;
 	const canContinue =
 		data.goal !== null && (data.goal === "maintain" || data.goalRate !== 0);
 
@@ -59,9 +89,9 @@ export default function GoalScreen() {
 		<SafeAreaView style={styles.safe}>
 			<ProgressBar current={2} total={6} />
 			<ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-				<Text style={styles.title}>Quel est ton objectif ?</Text>
+				<Text style={styles.title}>{t("onboarding.goalTitle")}</Text>
 
-				{GOALS.map((g) => (
+				{goals.map((g) => (
 					<SelectCard
 						key={g.value}
 						title={g.title}
@@ -78,7 +108,7 @@ export default function GoalScreen() {
 
 				{rates && (
 					<View style={styles.rateSection}>
-						<Text style={styles.subtitle}>Rythme par semaine</Text>
+						<Text style={styles.subtitle}>{t("onboarding.paceTitle")}</Text>
 						{rates.map((r) => (
 							<SelectCard
 								key={r.value}

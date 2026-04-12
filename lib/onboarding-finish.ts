@@ -17,13 +17,19 @@ import {
 } from "./tdee";
 
 export async function finishOnboarding(data: OnboardingData) {
+	if (!data.sex || !data.activityLevel || !data.goal) {
+		throw new Error("onboarding:missing_required_fields");
+	}
+	const sex = data.sex;
+	const activityLevel = data.activityLevel;
+	const goal = data.goal;
+
 	const now = new Date().toISOString();
 	const today = now.slice(0, 10); // YYYY-MM-DD
 	const birthDate = `${new Date().getFullYear() - data.age}-01-01`;
 
-	// Compute targets
-	const bmr = calculateBMR(data.sex!, data.weightKg, data.heightCm, data.age);
-	const tdee = calculateTDEE(bmr, data.activityLevel!);
+	const bmr = calculateBMR(sex, data.weightKg, data.heightCm, data.age);
+	const tdee = calculateTDEE(bmr, activityLevel);
 	const kcalTarget =
 		data.kcalOverride ?? calculateTargetKcal(tdee, data.goalRate);
 
@@ -38,24 +44,24 @@ export async function finishOnboarding(data: OnboardingData) {
 		.insert(userProfile)
 		.values({
 			id: "default",
-			sex: data.sex!,
+			sex,
 			birthDate,
 			heightCm: data.heightCm,
-			activityLevel: data.activityLevel!,
+			activityLevel,
 			trainingDaysPerWeek: data.trainingDaysPerWeek,
-			goal: data.goal!,
+			goal,
 			goalRate: data.goalRate,
 			updatedAt: now,
 		})
 		.onConflictDoUpdate({
 			target: userProfile.id,
 			set: {
-				sex: data.sex!,
+				sex,
 				birthDate,
 				heightCm: data.heightCm,
-				activityLevel: data.activityLevel!,
+				activityLevel,
 				trainingDaysPerWeek: data.trainingDaysPerWeek,
-				goal: data.goal!,
+				goal,
 				goalRate: data.goalRate,
 				updatedAt: now,
 			},

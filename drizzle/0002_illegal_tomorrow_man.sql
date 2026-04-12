@@ -1,0 +1,1 @@
+ALTER TABLE `foods` ADD `last_off_fetch_at` text;

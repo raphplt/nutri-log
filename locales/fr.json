@@ -1,0 +1,230 @@
+{
+	"common": {
+		"cancel": "Annuler",
+		"save": "Enregistrer",
+		"saving": "Enregistrement...",
+		"add": "Ajouter",
+		"adding": "Ajout...",
+		"close": "Fermer",
+		"back": "Retour",
+		"later": "Plus tard",
+		"confirm": "Confirmer",
+		"continue": "Continuer",
+		"next": "Suivant",
+		"finish": "Terminer",
+		"edit": "Modifier",
+		"error": "Erreur",
+		"errorGeneric": "Une erreur est survenue",
+		"networkError": "Erreur réseau. Vérifie ta connexion.",
+		"dbError": "Erreur base de données : {{message}}",
+		"today": "Aujourd'hui",
+		"yesterday": "Hier",
+		"optional": "optionnel",
+		"kcal": "kcal",
+		"grams": "g",
+		"grams_long": "grammes",
+		"kg": "kg",
+		"cm": "cm",
+		"years": "ans",
+		"perWeek": "/ sem",
+		"perDay": "/ jour",
+		"daysPerWeek": "j/sem"
+	},
+	"nav": {
+		"add": "Ajouter",
+		"scan": "Scanner",
+		"search": "Rechercher",
+		"quick": "Ajout rapide",
+		"confirm": "Confirmer",
+		"meal": "Repas",
+		"weight": "Poids",
+		"profile": "Profil",
+		"dashboard": "Accueil",
+		"settings": "Réglages",
+		"oops": "Oups !"
+	},
+	"meal": {
+		"breakfast": "Petit-déjeuner",
+		"lunch": "Déjeuner",
+		"snack": "Goûter",
+		"dinner": "Dîner",
+		"breakfast_lower": "petit-déjeuner",
+		"lunch_lower": "déjeuner",
+		"snack_lower": "goûter",
+		"dinner_lower": "dîner"
+	},
+	"sex": {
+		"male": "Homme",
+		"female": "Femme"
+	},
+	"goal": {
+		"lose": "Perdre du poids",
+		"maintain": "Maintenir",
+		"gain": "Prendre du poids",
+		"lose_short": "Perdre",
+		"maintain_short": "Maintenir",
+		"gain_short": "Prendre",
+		"lose_noun": "Perte",
+		"maintain_noun": "Maintien",
+		"gain_noun": "Prise",
+		"loseDesc": "Déficit calorique pour brûler du gras",
+		"maintainDesc": "Garder ton poids actuel",
+		"gainDesc": "Surplus calorique pour construire du muscle"
+	},
+	"activity": {
+		"sedentary": "Sédentaire",
+		"light": "Légèrement actif",
+		"moderate": "Modérément actif",
+		"active": "Actif",
+		"very_active": "Très actif",
+		"sedentaryDesc": "Bureau, peu de marche",
+		"lightDesc": "Marche quotidienne ou debout au travail",
+		"moderateDesc": "Actif au quotidien, un peu de sport",
+		"activeDesc": "Travail physique ou sport régulier",
+		"very_activeDesc": "Travail très physique + sport intense"
+	},
+	"macro": {
+		"calories": "Calories",
+		"protein": "Protéines",
+		"carbs": "Glucides",
+		"fat": "Lipides",
+		"fiber": "Fibres",
+		"balanced": "Équilibré",
+		"balancedDetail": "30% P / 40% G / 30% L",
+		"high_protein": "High protein",
+		"high_proteinDetail": "40% P / 35% G / 25% L",
+		"low_carb": "Low carb",
+		"low_carbDetail": "35% P / 25% G / 40% L",
+		"distribution": "Répartition macros"
+	},
+	"dashboard": {
+		"remaining": "RESTANT",
+		"goalLine": "Objectif {{target}} · Consommé {{consumed}}",
+		"mealsTitle": "Repas",
+		"noMealsTitle": "Aucun repas enregistré",
+		"noMealsHint": "Appuie sur + pour commencer",
+		"weightLabel": "Poids"
+	},
+	"recalcul": {
+		"deltaPositive": "Ton poids a changé de +{{delta}} kg.",
+		"deltaNegative": "Ton poids a changé de {{delta}} kg.",
+		"question": "Recalculer tes objectifs ?",
+		"recalculate": "Recalculer"
+	},
+	"addScreen": {
+		"recents": "RÉCENTS",
+		"frequents": "FRÉQUENTS",
+		"modeScan": "Scanner",
+		"modeScanDesc": "Code-barres",
+		"modeSearch": "Rechercher",
+		"modeSearchDesc": "Par nom",
+		"modeQuick": "Quick Add",
+		"modeQuickDesc": "Saisie manuelle"
+	},
+	"scan": {
+		"permRequired": "Accès caméra requis pour scanner",
+		"permAllow": "Autoriser",
+		"hint": "Place le code-barres dans le cadre",
+		"notFound": "Produit non trouvé dans Open Food Facts",
+		"invalid": "Code-barres invalide",
+		"manualEntry": "Saisir le code manuellement",
+		"manualEntryTitle": "Code-barres",
+		"manualEntryPlaceholder": "13 chiffres",
+		"torchOn": "Allumer la torche",
+		"torchOff": "Éteindre la torche",
+		"pendingQueueOne": "1 scan en attente",
+		"pendingQueueMany": "{{count}} scans en attente",
+		"resolvedOne": "1 produit synchronisé",
+		"resolvedMany": "{{count}} produits synchronisés"
+	},
+	"search": {
+		"placeholder": "Rechercher un aliment...",
+		"empty": "Aucun résultat",
+		"recent": "RÉCENTES",
+		"frequent": "FRÉQUENTS",
+		"rawFood": "🥕 Aliment brut"
+	},
+	"confirm": {
+		"quantity": "QUANTITÉ",
+		"mealType": "TYPE DE REPAS",
+		"portion": "PORTION",
+		"portionCustom": "Personnalisé",
+		"incompleteData": "Données incomplètes, à compléter",
+		"editData": "Modifier"
+	},
+	"quick": {
+		"nameLabel": "NOM (OPTIONNEL)",
+		"namePlaceholder": "Ex: Snack, Repas au resto...",
+		"defaultName": "Ajout rapide",
+		"kcalRequired": "Les calories doivent être supérieures à 0"
+	},
+	"weightScreen": {
+		"todayLabel": "Poids aujourd'hui",
+		"evolution": "ÉVOLUTION",
+		"history": "HISTORIQUE",
+		"empty": "Aucune pesée enregistrée"
+	},
+	"profileScreen": {
+		"activityLevel": "NIVEAU D'ACTIVITÉ",
+		"trainingDays": "Jours d'entraînement / semaine",
+		"goalTitle": "OBJECTIF",
+		"pace": "Rythme (kg/semaine)",
+		"height": "Taille",
+		"sex": "SEXE"
+	},
+	"settings": {
+		"profile": "PROFIL",
+		"goals": "OBJECTIFS",
+		"weight": "POIDS",
+		"weightTracking": "Suivi du poids",
+		"reminders": "RAPPELS",
+		"language": "LANGUE",
+		"langFr": "Français",
+		"langEn": "English",
+		"langAuto": "Auto"
+	},
+	"onboarding": {
+		"bodyTitle": "Infos physiques",
+		"ageLabel": "Âge",
+		"heightLabel": "Taille",
+		"weightLabel": "Poids actuel",
+		"sexLabel": "SEXE",
+		"goalTitle": "Quel est ton objectif ?",
+		"paceTitle": "Rythme par semaine",
+		"activityTitle": "Comment décrirais-tu ton quotidien ?",
+		"trainingTitle": "Combien de jours par semaine tu t'entraînes ?",
+		"trainingLabel": "JOURS D'ENTRAÎNEMENT",
+		"summaryTitle": "Tes objectifs",
+		"bmr": "BMR",
+		"tdee": "TDEE",
+		"dailyGoal": "OBJECTIF QUOTIDIEN",
+		"kcalPerDay": "kcal / jour",
+		"adjustManually": "Ajuster manuellement",
+		"remindersTitle": "Rappels",
+		"remindersDesc": "Active des rappels pour ne pas oublier de logger tes repas.",
+		"permissionsTitle": "Permissions",
+		"permissionsBody": "Les notifications ne sont pas activées. Tu pourras les activer plus tard dans les réglages.",
+		"loseRates": {
+			"veryslow": "Très lent",
+			"slow": "Lent",
+			"moderate": "Modéré",
+			"fast": "Rapide",
+			"aggressive": "Agressif",
+			"veryaggressive": "Très agressif"
+		},
+		"gainRates": {
+			"verylean": "Très lean",
+			"leanbulk": "Lean bulk",
+			"bulk": "Bulk",
+			"aggressivebulk": "Bulk agressif"
+		}
+	},
+	"notFound": {
+		"title": "Cet écran n'existe pas.",
+		"goHome": "Retour à l'accueil"
+	},
+	"reminders": {
+		"title": "{{label}}",
+		"body": "N'oublie pas de logger ton {{label}} !"
+	}
+}
