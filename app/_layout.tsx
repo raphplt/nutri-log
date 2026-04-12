@@ -117,8 +117,14 @@ export default function RootLayout() {
 				options={{ presentation: "modal", headerShown: false }}
 			/>
 			<Stack.Screen name="meal/[id]" options={{ title: t("nav.meal") }} />
-			<Stack.Screen name="weight" options={{ title: t("nav.weight") }} />
-			<Stack.Screen name="profile" options={{ title: t("nav.profile") }} />
+			<Stack.Screen
+				name="weight/index"
+				options={{ title: t("nav.weight") }}
+			/>
+			<Stack.Screen
+				name="profile/index"
+				options={{ title: t("nav.profile") }}
+			/>
 			<Stack.Screen
 				name="food/[id]/edit"
 				options={{ title: t("edit.title") }}

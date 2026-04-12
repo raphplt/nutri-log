@@ -13,6 +13,10 @@ export class HttpError extends Error {
 	}
 }
 
+class TimeoutError extends Error {
+	readonly name = "TimeoutError";
+}
+
 interface FetchOptions {
 	signal?: AbortSignal;
 	headers?: Record<string, string>;
@@ -28,7 +32,7 @@ function composeSignal(
 	if (external?.aborted) ctrl.abort(external.reason);
 	else external?.addEventListener("abort", onAbort, { once: true });
 	const timer = setTimeout(
-		() => ctrl.abort(new DOMException("timeout", "TimeoutError")),
+		() => ctrl.abort(new TimeoutError("timeout")),
 		timeoutMs,
 	);
 	ctrl.signal.addEventListener(
