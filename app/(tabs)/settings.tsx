@@ -6,17 +6,22 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+	Alert,
 	Pressable,
 	ScrollView,
+	Share,
 	StyleSheet,
 	Switch,
 	Text,
 	View,
 } from "react-native";
+import { ImportDataModal } from "@/components/ImportDataModal";
 import { colors, fontSize, radii, spacing } from "@/constants/theme";
 import { db } from "@/db/client";
 import { reminderSettings, userGoals, userProfile } from "@/db/schema";
 import { getMeta, setMeta } from "@/lib/app-meta";
+import { exportAllDataJson } from "@/lib/data-export";
+import type { ImportResult } from "@/lib/data-import";
 import i18n, { type LanguagePreference, resolveLanguage } from "@/lib/i18n";
 import { scheduleAllReminders } from "@/lib/reminders";
 
@@ -27,6 +32,7 @@ export default function SettingsScreen() {
 	const { data: profiles } = useLiveQuery(db.select().from(userProfile));
 	const { data: goals } = useLiveQuery(db.select().from(userGoals));
 	const [language, setLanguage] = useState<LanguagePreference>("auto");
+	const [importOpen, setImportOpen] = useState(false);
 
 	const profile = profiles[0];
 	const goal = goals[0];
@@ -42,6 +48,35 @@ export default function SettingsScreen() {
 		setLanguage(pref);
 		await setMeta("language", pref);
 		await i18n.changeLanguage(resolveLanguage(pref));
+	};
+
+	const handleExport = async () => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+		try {
+			const json = await exportAllDataJson();
+			await Share.share({
+				title: t("exportData.shareTitle"),
+				message: json,
+			});
+		} catch (err) {
+			Alert.alert(
+				t("common.error"),
+				err instanceof Error ? err.message : t("common.errorGeneric"),
+			);
+		}
+	};
+
+	const handleImported = (result: ImportResult) => {
+		setImportOpen(false);
+		Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+		Alert.alert(
+			t("importData.successTitle"),
+			t("importData.successMessage", {
+				meals: result.mealsCount,
+				weights: result.weightLogCount,
+				recipes: result.recipesCount,
+			}),
+		);
 	};
 
 	const toggleReminder = async (id: string, current: boolean) => {
@@ -165,8 +200,30 @@ export default function SettingsScreen() {
 				))}
 			</View>
 
+			<Text style={styles.sectionLabel}>{t("settings.data")}</Text>
+			<Pressable onPress={handleExport} style={styles.row}>
+				<View style={styles.rowTextCol}>
+					<Text style={styles.rowTitle}>{t("settings.exportData")}</Text>
+					<Text style={styles.rowSub}>{t("settings.exportDataHint")}</Text>
+				</View>
+				<FontAwesome name="download" size={14} color={colors.textDim} />
+			</Pressable>
+			<Pressable onPress={() => setImportOpen(true)} style={styles.row}>
+				<View style={styles.rowTextCol}>
+					<Text style={styles.rowTitle}>{t("settings.importData")}</Text>
+					<Text style={styles.rowSub}>{t("settings.importDataHint")}</Text>
+				</View>
+				<FontAwesome name="upload" size={14} color={colors.textDim} />
+			</Pressable>
+
 			<Text style={styles.sectionLabel}>{t("settings.about")}</Text>
 			<Text style={styles.attribution}>{t("settings.attribution")}</Text>
+
+			<ImportDataModal
+				visible={importOpen}
+				onClose={() => setImportOpen(false)}
+				onImported={handleImported}
+			/>
 		</ScrollView>
 	);
 }
@@ -200,6 +257,7 @@ const styles = StyleSheet.create({
 		padding: spacing.lg,
 		marginBottom: spacing.sm,
 	},
+	rowTextCol: { flex: 1, paddingRight: spacing.md },
 	rowTitle: { fontSize: fontSize.md, fontWeight: "600", color: colors.text },
 	rowSub: { fontSize: fontSize.sm, color: colors.textMuted, marginTop: 2 },
 	goalsCard: {

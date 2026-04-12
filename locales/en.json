@@ -201,7 +201,12 @@
 		"langEn": "English",
 		"langAuto": "Auto",
 		"about": "ABOUT",
-		"attribution": "Raw foods data: ANSES CIQUAL 2020 (Etalab Open License v2.0)."
+		"attribution": "Raw foods data: ANSES CIQUAL 2020 (Etalab Open License v2.0).",
+		"data": "DATA",
+		"exportData": "Export my data",
+		"exportDataHint": "Full JSON backup (profile, meals, recipes, weight).",
+		"importData": "Import from backup",
+		"importDataHint": "Replaces all data with the backup contents."
 	},
 	"onboarding": {
 		"bodyTitle": "Physical info",
@@ -297,6 +302,27 @@
 	"reminders": {
 		"title": "{{label}}",
 		"body": "Don't forget to log your {{label}}!"
+	},
+	"importData": {
+		"title": "Import data",
+		"description": "Paste the JSON content from a previous backup here.",
+		"warning": "⚠️ All your current data will be replaced.",
+		"placeholder": "{ \"version\": 1, \"data\": {...} }",
+		"submit": "Import",
+		"successTitle": "Import successful",
+		"successMessage": "{{meals}} meals, {{weights}} weigh-ins, {{recipes}} recipes imported.",
+		"welcomeLink": "I already have a backup",
+		"errors": {
+			"invalid-json": "Invalid JSON",
+			"invalid-payload": "Invalid backup format",
+			"missing-version": "Missing version",
+			"version-too-new": "Backup from a newer app version",
+			"missing-data": "Missing data"
+		}
+	},
+	"exportData": {
+		"shareTitle": "NutriLog backup",
+		"successMessage": "Export ready to share."
 	},
 	"stats": {
 		"title": "Statistics",

@@ -1,12 +1,14 @@
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ImportDataModal } from "@/components/ImportDataModal";
 import { NextButton } from "@/components/NextButton";
 import { NumericInput } from "@/components/NumericInput";
 import { ProgressBar } from "@/components/ProgressBar";
-import { colors, fontSize, radii, spacing } from "@/constants/theme";
+import { colors, fontSize, fonts, radii, spacing } from "@/constants/theme";
 import { useOnboarding } from "@/lib/onboarding-store";
 import type { Sex } from "@/lib/tdee";
 
@@ -14,6 +16,7 @@ export default function BodyScreen() {
 	const { t } = useTranslation();
 	const router = useRouter();
 	const { data, update } = useOnboarding();
+	const [importOpen, setImportOpen] = useState(false);
 
 	const canContinue =
 		data.sex !== null && data.age > 0 && data.heightCm > 0 && data.weightKg > 0;
@@ -23,11 +26,27 @@ export default function BodyScreen() {
 		update({ sex });
 	};
 
+	const handleImported = () => {
+		setImportOpen(false);
+		router.replace("/");
+	};
+
 	return (
 		<SafeAreaView style={styles.safe}>
 			<ProgressBar current={1} total={6} />
 			<ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-				<Text style={styles.title}>{t("onboarding.bodyTitle")}</Text>
+				<View style={styles.titleRow}>
+					<Text style={styles.title}>{t("onboarding.bodyTitle")}</Text>
+					<Pressable
+						onPress={() => setImportOpen(true)}
+						hitSlop={8}
+						style={styles.importLink}
+					>
+						<Text style={styles.importLinkText}>
+							{t("importData.welcomeLink")}
+						</Text>
+					</Pressable>
+				</View>
 
 				<Text style={styles.label}>{t("onboarding.sexLabel")}</Text>
 				<View style={styles.toggleRow}>
@@ -81,6 +100,12 @@ export default function BodyScreen() {
 				onPress={() => router.push("/onboarding/goal")}
 				disabled={!canContinue}
 			/>
+			<ImportDataModal
+				visible={importOpen}
+				onClose={() => setImportOpen(false)}
+				onImported={handleImported}
+				showWarning={false}
+			/>
 		</SafeAreaView>
 	);
 }
@@ -89,11 +114,28 @@ const styles = StyleSheet.create({
 	safe: { flex: 1, backgroundColor: colors.background },
 	scroll: { flex: 1 },
 	content: { padding: spacing.xl, paddingBottom: spacing.xxl },
+	titleRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "flex-start",
+		marginBottom: spacing.xl,
+		gap: spacing.md,
+	},
 	title: {
+		flex: 1,
 		fontSize: fontSize.xxl,
 		fontWeight: "700",
 		color: colors.text,
-		marginBottom: spacing.xl,
+	},
+	importLink: {
+		paddingVertical: spacing.xs,
+		marginTop: spacing.sm,
+	},
+	importLinkText: {
+		fontSize: fontSize.xs,
+		color: colors.textMuted,
+		fontFamily: fonts.medium,
+		textDecorationLine: "underline",
 	},
 	label: {
 		fontSize: fontSize.sm,

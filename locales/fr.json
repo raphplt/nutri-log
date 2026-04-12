@@ -201,7 +201,12 @@
 		"langEn": "English",
 		"langAuto": "Auto",
 		"about": "À PROPOS",
-		"attribution": "Données aliments bruts : ANSES CIQUAL 2020 (Licence Ouverte Etalab v2.0)."
+		"attribution": "Données aliments bruts : ANSES CIQUAL 2020 (Licence Ouverte Etalab v2.0).",
+		"data": "DONNÉES",
+		"exportData": "Exporter mes données",
+		"exportDataHint": "Sauvegarde JSON complète (profil, repas, recettes, poids).",
+		"importData": "Importer depuis une sauvegarde",
+		"importDataHint": "Remplace toutes les données par celles du fichier."
 	},
 	"onboarding": {
 		"bodyTitle": "Infos physiques",
@@ -297,6 +302,27 @@
 	"reminders": {
 		"title": "{{label}}",
 		"body": "N'oublie pas de logger ton {{label}} !"
+	},
+	"importData": {
+		"title": "Importer des données",
+		"description": "Colle ici le contenu JSON d'une sauvegarde précédente.",
+		"warning": "⚠️ Toutes tes données actuelles seront remplacées.",
+		"placeholder": "{ \"version\": 1, \"data\": {...} }",
+		"submit": "Importer",
+		"successTitle": "Import réussi",
+		"successMessage": "{{meals}} repas, {{weights}} pesées, {{recipes}} recettes importés.",
+		"welcomeLink": "J'ai déjà une sauvegarde",
+		"errors": {
+			"invalid-json": "JSON invalide",
+			"invalid-payload": "Format de sauvegarde invalide",
+			"missing-version": "Version manquante",
+			"version-too-new": "Sauvegarde créée par une version plus récente de l'app",
+			"missing-data": "Données manquantes"
+		}
+	},
+	"exportData": {
+		"shareTitle": "Sauvegarde NutriLog",
+		"successMessage": "Export prêt à partager."
 	},
 	"stats": {
 		"title": "Statistiques",
