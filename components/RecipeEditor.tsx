@@ -17,6 +17,7 @@ import {
 import { NextButton } from "@/components/NextButton";
 import { NumericInput } from "@/components/NumericInput";
 import { colors, fontSize, fonts, radii, spacing } from "@/constants/theme";
+import { createId } from "@/lib/nanoid";
 import {
 	clearActiveDraft,
 	patchActiveDraft,
@@ -40,6 +41,17 @@ export function RecipeEditor({ mode }: Props) {
 	const router = useRouter();
 	const draft = useActiveDraft();
 	const [saving, setSaving] = useState(false);
+	const keyMap = useRef<WeakMap<RecipeItemInput, string>>(
+		new WeakMap(),
+	).current;
+	const keyFor = (item: RecipeItemInput): string => {
+		let k = keyMap.get(item);
+		if (!k) {
+			k = createId();
+			keyMap.set(item, k);
+		}
+		return k;
+	};
 
 	const totals = useMemo(() => {
 		if (!draft) return null;
@@ -285,7 +297,7 @@ export function RecipeEditor({ mode }: Props) {
 				<View style={styles.itemsList}>
 					{draft.items.map((it, idx) => (
 						<Pressable
-							key={`${it.name}-${idx}`}
+							key={keyFor(it)}
 							onLongPress={() => handleRemoveIngredient(idx, it)}
 							style={({ pressed }) => [
 								styles.itemRow,
