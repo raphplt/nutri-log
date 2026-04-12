@@ -55,6 +55,9 @@ export const mealItems = sqliteTable(
 			.references(() => meals.id, { onDelete: "cascade" }),
 		foodId: text("food_id").references(() => foods.id),
 		servingId: integer("serving_id"),
+		recipeId: text("recipe_id"),
+		recipeSnapshotAt: text("recipe_snapshot_at"),
+		recipeServings: real("recipe_servings"),
 		name: text("name").notNull(),
 		quantityG: real("quantity_g").notNull(),
 		kcal: real("kcal").notNull(),
@@ -64,7 +67,51 @@ export const mealItems = sqliteTable(
 		fiber: real("fiber"),
 		createdAt: text("created_at").notNull(),
 	},
-	(table) => [index("idx_meal_items_meal_id").on(table.mealId)],
+	(table) => [
+		index("idx_meal_items_meal_id").on(table.mealId),
+		index("idx_meal_items_recipe_id").on(table.recipeId),
+	],
+);
+
+export const recipes = sqliteTable(
+	"recipes",
+	{
+		id: text("id").primaryKey(),
+		name: text("name").notNull(),
+		kind: text("kind").notNull(), // 'template' | 'recipe'
+		totalWeightG: real("total_weight_g"),
+		servingsDefault: real("servings_default"),
+		imageUrl: text("image_url"),
+		notes: text("notes"),
+		useCount: integer("use_count").default(0),
+		lastUsedAt: text("last_used_at"),
+		createdAt: text("created_at").notNull(),
+		updatedAt: text("updated_at").notNull(),
+	},
+	(table) => [
+		index("idx_recipes_kind").on(table.kind),
+		index("idx_recipes_use_count").on(table.useCount),
+	],
+);
+
+export const recipeItems = sqliteTable(
+	"recipe_items",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		recipeId: text("recipe_id")
+			.notNull()
+			.references(() => recipes.id, { onDelete: "cascade" }),
+		foodId: text("food_id").references(() => foods.id),
+		name: text("name").notNull(),
+		quantityG: real("quantity_g").notNull(),
+		kcal: real("kcal").notNull(),
+		protein: real("protein").notNull(),
+		carbs: real("carbs").notNull(),
+		fat: real("fat").notNull(),
+		fiber: real("fiber"),
+		position: integer("position").notNull().default(0),
+	},
+	(table) => [index("idx_recipe_items_recipe_id").on(table.recipeId)],
 );
 
 export const foodServings = sqliteTable(

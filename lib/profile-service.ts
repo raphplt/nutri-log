@@ -7,25 +7,25 @@ import {
 	calculateBMR,
 	calculateTargetKcal,
 	calculateTDEE,
+	computeRecommendedMacros,
 	type Goal,
-	getMacroPreset,
 	type MacroPreset,
-	macrosFromPercentages,
 	type Sex,
 } from "./tdee";
+import { getLatestWeightKg } from "./weight-service";
 
 interface ProfileUpdate {
 	sex: Sex;
 	birthDate: string;
 	heightCm: number;
-	weightKg: number;
+	weightKg?: number;
 	activityLevel: ActivityLevel;
 	trainingDaysPerWeek: number;
 	goal: Goal;
 	goalRate: number;
 }
 
-/** Update profile and recalculate goals. */
+/** Update profile and recalculate goals using the latest weight on record. */
 export async function updateProfileAndRecalculate(
 	update: ProfileUpdate,
 	macroPreset: MacroPreset,
@@ -46,10 +46,11 @@ export async function updateProfileAndRecalculate(
 		})
 		.where(eq(userProfile.id, "default"));
 
-	await recalculateGoals(update, macroPreset);
+	const weightKg = update.weightKg ?? (await getLatestWeightKg()) ?? 70;
+	await recalculateGoals({ ...update, weightKg }, macroPreset);
 }
 
-/** Recalculate goals from current profile data. */
+/** Recalculate goals from a complete profile snapshot. */
 export async function recalculateGoals(
 	profile: {
 		sex: Sex;
@@ -57,6 +58,8 @@ export async function recalculateGoals(
 		heightCm: number;
 		weightKg: number;
 		activityLevel: ActivityLevel;
+		trainingDaysPerWeek: number;
+		goal: Goal;
 		goalRate: number;
 	},
 	macroPreset: MacroPreset,
@@ -72,10 +75,18 @@ export async function recalculateGoals(
 	const tdee = calculateTDEE(bmr, profile.activityLevel);
 	const kcalTarget = calculateTargetKcal(tdee, profile.goalRate);
 
-	const preset = macroPreset !== "custom" ? getMacroPreset(macroPreset) : null;
-	const macros = preset
-		? macrosFromPercentages(kcalTarget, preset.p, preset.c, preset.f)
-		: { proteinG: 0, carbsG: 0, fatG: 0 };
+	const macros =
+		macroPreset === "custom"
+			? { proteinG: 0, carbsG: 0, fatG: 0 }
+			: computeRecommendedMacros(
+					{
+						kcalTarget,
+						weightKg: profile.weightKg,
+						goal: profile.goal,
+						trainingDaysPerWeek: profile.trainingDaysPerWeek,
+					},
+					macroPreset,
+				);
 
 	await db
 		.update(userGoals)

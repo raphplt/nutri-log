@@ -7,6 +7,7 @@ import m0003 from "./0003_fts_foods.sql";
 import m0004 from "./0004_hesitant_photon.sql";
 import m0005 from "./0005_famous_living_tribunal.sql";
 import m0006 from "./0006_amused_tony_stark.sql";
+import m0007 from "./0007_square_thor_girl.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -19,5 +20,6 @@ export default {
 		m0004,
 		m0005,
 		m0006,
+		m0007,
 	},
 };

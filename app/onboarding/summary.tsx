@@ -12,9 +12,8 @@ import {
 	calculateBMR,
 	calculateTargetKcal,
 	calculateTDEE,
-	getMacroPreset,
+	computeRecommendedMacros,
 	type MacroPreset,
-	macrosFromPercentages,
 } from "@/lib/tdee";
 
 const PRESET_VALUES: MacroPreset[] = ["balanced", "high_protein", "low_carb"];
@@ -31,11 +30,18 @@ export default function SummaryScreen() {
 	const targetKcal =
 		data.kcalOverride ?? calculateTargetKcal(tdee, data.goalRate);
 
-	const preset =
-		data.macroPreset !== "custom" ? getMacroPreset(data.macroPreset) : null;
-	const macros = preset
-		? macrosFromPercentages(targetKcal, preset.p, preset.c, preset.f)
-		: { proteinG: 0, carbsG: 0, fatG: 0 };
+	const macros =
+		data.macroPreset === "custom" || !data.goal
+			? { proteinG: 0, carbsG: 0, fatG: 0, proteinGPerKg: 0 }
+			: computeRecommendedMacros(
+					{
+						kcalTarget: targetKcal,
+						weightKg: data.weightKg,
+						goal: data.goal,
+						trainingDaysPerWeek: data.trainingDaysPerWeek,
+					},
+					data.macroPreset,
+				);
 
 	return (
 		<SafeAreaView style={styles.safe}>
@@ -82,24 +88,33 @@ export default function SummaryScreen() {
 					/>
 				))}
 
-				{preset && (
-					<View style={styles.macroRow}>
-						<MacroBox
-							label={t("macro.protein")}
-							grams={macros.proteinG}
-							color={colors.primary}
-						/>
-						<MacroBox
-							label={t("macro.carbs")}
-							grams={macros.carbsG}
-							color={colors.success}
-						/>
-						<MacroBox
-							label={t("macro.fat")}
-							grams={macros.fatG}
-							color={colors.warning}
-						/>
-					</View>
+				{data.macroPreset !== "custom" && (
+					<>
+						<View style={styles.macroRow}>
+							<MacroBox
+								label={t("macro.protein")}
+								grams={macros.proteinG}
+								color={colors.primary}
+							/>
+							<MacroBox
+								label={t("macro.carbs")}
+								grams={macros.carbsG}
+								color={colors.success}
+							/>
+							<MacroBox
+								label={t("macro.fat")}
+								grams={macros.fatG}
+								color={colors.warning}
+							/>
+						</View>
+						{macros.proteinGPerKg > 0 && (
+							<Text style={styles.proteinHint}>
+								{t("macro.proteinPerKg", {
+									value: macros.proteinGPerKg.toFixed(1),
+								})}
+							</Text>
+						)}
+					</>
 				)}
 			</ScrollView>
 			<NextButton onPress={() => router.push("/onboarding/reminders")} />
@@ -221,6 +236,13 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		gap: spacing.sm,
 		marginTop: spacing.lg,
+	},
+	proteinHint: {
+		fontSize: fontSize.xs,
+		color: colors.textMuted,
+		textAlign: "center",
+		marginTop: spacing.md,
+		fontStyle: "italic",
 	},
 	macroBox: {
 		flex: 1,

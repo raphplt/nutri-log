@@ -22,13 +22,38 @@ function buildMatchExpression(tokens: string[]): string {
 	return tokens.map((t) => `${t}*`).join(" ");
 }
 
-function recencyBoost(lastUsedAt: string | null): number {
-	if (!lastUsedAt) return 1;
+function recencyBonus(lastUsedAt: string | null): number {
+	if (!lastUsedAt) return 0;
 	const days = (Date.now() - new Date(lastUsedAt).getTime()) / 86400000;
-	if (days < 1) return 0.5;
-	if (days < 7) return 0.7;
-	if (days < 30) return 0.9;
-	return 1;
+	if (days < 1) return 2;
+	if (days < 7) return 1;
+	if (days < 30) return 0.5;
+	return 0;
+}
+
+function normalize(s: string): string {
+	return s
+		.normalize("NFKD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.toLowerCase();
+}
+
+/**
+ * Boost "raw ingredient" CIQUAL entries: single substantive (no comma, few
+ * tokens). These are the user intent when typing a short ingredient name.
+ */
+function rawIngredientBonus(source: string, name: string): number {
+	if (source !== "ciqual") return 0;
+	const tokens = name.split(/\s+/).filter(Boolean).length;
+	const hasComma = name.includes(",");
+	if (!hasComma && tokens <= 2) return 3;
+	if (!hasComma && tokens <= 4) return 1.5;
+	return 0;
+}
+
+function startsWithBonus(name: string, firstToken: string): number {
+	const head = normalize(name).split(/[,\s]+/)[0] ?? "";
+	return head.startsWith(firstToken) ? 2 : 0;
 }
 
 interface RawRow {
@@ -97,13 +122,20 @@ export async function searchLocal(
 
 	if (opts.signal?.aborted) return [];
 
+	const firstToken = tokens[0];
 	const scored = rows.map((r) => {
-		const useBoost = 1 + Math.log(1 + (r.use_count ?? 0));
-		const score = r.bm25 / useBoost / recencyBoost(r.last_used_at);
+		// SQLite bm25() returns a negative value where more negative = better.
+		// Convert to positive "relevance" (higher = better) and combine bonuses.
+		const relevance = -r.bm25;
+		const useBonus = Math.log(1 + (r.use_count ?? 0)) * 0.8;
+		const recency = recencyBonus(r.last_used_at);
+		const raw = rawIngredientBonus(r.source, r.name);
+		const starts = startsWithBonus(r.name, firstToken);
+		const score = relevance + useBonus + recency + raw + starts;
 		return rawToFood(r, score);
 	});
 
-	scored.sort((a, b) => a.score - b.score);
+	scored.sort((a, b) => b.score - a.score);
 	return scored.slice(0, opts.limit ?? 20);
 }
 

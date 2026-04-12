@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { foods } from "@/db/schema";
 import { getMeta, setMeta } from "./app-meta";
@@ -15,8 +16,16 @@ interface CiqualEntry {
 	sodiumMg: number | null;
 }
 
-const SEED_FLAG = "ciqual_seeded_v1";
+const SEED_FLAG = "ciqual_seeded_v2";
 const CHUNK_SIZE = 80;
+
+/**
+ * ANSES names look like "Boeuf, filet, cru". Collapse the commas so the display
+ * reads naturally and the FTS tokenizer still splits the substantives cleanly.
+ */
+function formatCiqualName(raw: string): string {
+	return raw.replace(/,\s*/g, " ").replace(/\s+/g, " ").trim();
+}
 
 export async function seedCiqualIfNeeded(): Promise<{
 	seeded: boolean;
@@ -24,6 +33,9 @@ export async function seedCiqualIfNeeded(): Promise<{
 }> {
 	const flag = await getMeta(SEED_FLAG);
 	if (flag) return { seeded: false, count: 0 };
+
+	// If a previous version was seeded, wipe its rows before re-inserting.
+	await db.delete(foods).where(eq(foods.source, "ciqual"));
 
 	const entries = (await import("@/assets/ciqual.json"))
 		.default as CiqualEntry[];
@@ -38,7 +50,7 @@ export async function seedCiqualIfNeeded(): Promise<{
 			id: createId(),
 			source: "ciqual" as const,
 			barcode: null,
-			name: e.name,
+			name: formatCiqualName(e.name),
 			brand: null,
 			imageUrl: null,
 			kcalPer100g: e.kcal as number,

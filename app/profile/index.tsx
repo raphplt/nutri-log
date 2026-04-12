@@ -59,7 +59,6 @@ export default function ProfileScreen() {
 					sex,
 					birthDate: profile.birthDate,
 					heightCm,
-					weightKg: 0,
 					activityLevel,
 					trainingDaysPerWeek: trainingDays,
 					goal: goalType,

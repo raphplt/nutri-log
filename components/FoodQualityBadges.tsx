@@ -1,6 +1,5 @@
-import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
-import { fontSize, radii, spacing } from "@/constants/theme";
+import { fontSize, radii } from "@/constants/theme";
 
 const NUTRI_COLORS: Record<string, string> = {
 	a: "#038141",
@@ -28,24 +27,28 @@ export function FoodQualityBadges({
 	novaGroup,
 	compact,
 }: Props) {
-	const { t } = useTranslation();
 	const grade = nutriscoreGrade?.toLowerCase();
 	const hasNutri = grade && NUTRI_COLORS[grade];
 	const hasNova = novaGroup != null && NOVA_COLORS[novaGroup];
 
 	if (!hasNutri && !hasNova) return null;
 
+	const size = compact ? 20 : 26;
+
 	return (
-		<View style={[styles.row, compact && styles.rowCompact]}>
+		<View style={styles.row}>
 			{hasNutri && (
 				<View
 					style={[
-						styles.nutri,
-						{ backgroundColor: NUTRI_COLORS[grade] },
-						compact && styles.badgeCompact,
+						styles.badge,
+						{
+							width: size,
+							height: size,
+							backgroundColor: NUTRI_COLORS[grade],
+						},
 					]}
 				>
-					<Text style={[styles.nutriLetter, compact && styles.letterCompact]}>
+					<Text style={[styles.letter, compact && styles.letterCompact]}>
 						{grade.toUpperCase()}
 					</Text>
 				</View>
@@ -53,13 +56,16 @@ export function FoodQualityBadges({
 			{hasNova && (
 				<View
 					style={[
-						styles.nova,
-						{ backgroundColor: NOVA_COLORS[novaGroup] },
-						compact && styles.badgeCompact,
+						styles.badge,
+						{
+							width: size,
+							height: size,
+							backgroundColor: NOVA_COLORS[novaGroup],
+						},
 					]}
 				>
-					<Text style={[styles.novaLabel, compact && styles.letterCompact]}>
-						{t("badges.novaShort", { n: novaGroup })}
+					<Text style={[styles.letter, compact && styles.letterCompact]}>
+						{novaGroup}
 					</Text>
 				</View>
 			)}
@@ -68,24 +74,12 @@ export function FoodQualityBadges({
 }
 
 const styles = StyleSheet.create({
-	row: { flexDirection: "row", gap: spacing.xs, alignItems: "center" },
-	rowCompact: { gap: 4 },
-	nutri: {
-		width: 28,
-		height: 28,
+	row: { flexDirection: "row", gap: 4, alignItems: "center" },
+	badge: {
 		borderRadius: radii.full,
 		alignItems: "center",
 		justifyContent: "center",
 	},
-	nutriLetter: { color: "#fff", fontSize: fontSize.md, fontWeight: "700" },
-	nova: {
-		paddingHorizontal: spacing.sm,
-		height: 28,
-		borderRadius: radii.full,
-		alignItems: "center",
-		justifyContent: "center",
-	},
-	novaLabel: { color: "#fff", fontSize: fontSize.xs, fontWeight: "700" },
-	badgeCompact: { width: 20, height: 20, paddingHorizontal: spacing.xs },
+	letter: { color: "#fff", fontSize: fontSize.sm, fontWeight: "700" },
 	letterCompact: { fontSize: fontSize.xs },
 });

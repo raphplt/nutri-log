@@ -1,6 +1,6 @@
 # NutriLog
 
-App Expo / React Native de tracking calorique, local-first, zero pub. Voir `readme.md` pour le contexte produit et `DESIGN..md` / `PLAN.md` pour la vision UI et le plan d'implémentation.
+App Expo / React Native de tracking calorique, local-first, zero pub. Voir `readme.md` pour le contexte produit et `doc/DESIGN..md` / `doc/*` pour la vision UI et les plans d'implémentation.
 
 ## Stack
 

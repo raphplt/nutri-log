@@ -18,7 +18,7 @@ import { useGoals } from "@/hooks/useGoals";
 import { useRecentWeights } from "@/hooks/useRecentWeights";
 import { todayString } from "@/lib/date";
 import { recalculateGoals } from "@/lib/profile-service";
-import type { ActivityLevel, MacroPreset, Sex } from "@/lib/tdee";
+import type { ActivityLevel, Goal, MacroPreset, Sex } from "@/lib/tdee";
 
 export default function DashboardScreen() {
 	const { t } = useTranslation();
@@ -54,6 +54,8 @@ export default function DashboardScreen() {
 				heightCm: profile.heightCm,
 				weightKg: latestWeight,
 				activityLevel: profile.activityLevel as ActivityLevel,
+				trainingDaysPerWeek: profile.trainingDaysPerWeek,
+				goal: profile.goal as Goal,
 				goalRate: profile.goalRate ?? 0,
 			},
 			macroPreset,

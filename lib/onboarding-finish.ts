@@ -12,8 +12,7 @@ import {
 	calculateBMR,
 	calculateTargetKcal,
 	calculateTDEE,
-	getMacroPreset,
-	macrosFromPercentages,
+	computeRecommendedMacros,
 } from "./tdee";
 
 export async function finishOnboarding(data: OnboardingData) {
@@ -33,11 +32,18 @@ export async function finishOnboarding(data: OnboardingData) {
 	const kcalTarget =
 		data.kcalOverride ?? calculateTargetKcal(tdee, data.goalRate);
 
-	const preset =
-		data.macroPreset !== "custom" ? getMacroPreset(data.macroPreset) : null;
-	const macros = preset
-		? macrosFromPercentages(kcalTarget, preset.p, preset.c, preset.f)
-		: { proteinG: 0, carbsG: 0, fatG: 0 };
+	const macros =
+		data.macroPreset === "custom"
+			? { proteinG: 0, carbsG: 0, fatG: 0 }
+			: computeRecommendedMacros(
+					{
+						kcalTarget,
+						weightKg: data.weightKg,
+						goal,
+						trainingDaysPerWeek: data.trainingDaysPerWeek,
+					},
+					data.macroPreset,
+				);
 
 	// Upsert profile (id is fixed to 'default')
 	await db

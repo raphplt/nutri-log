@@ -20,6 +20,10 @@ export default function AddLayout() {
 			<Stack.Screen name="search" options={{ title: t("nav.search") }} />
 			<Stack.Screen name="quick" options={{ title: t("nav.quick") }} />
 			<Stack.Screen name="confirm" options={{ title: t("nav.confirm") }} />
+			<Stack.Screen
+				name="recipe-confirm"
+				options={{ title: t("nav.confirm") }}
+			/>
 		</Stack>
 	);
 }

@@ -20,6 +20,7 @@ import { useScanQueueResolver } from "@/hooks/useScanQueueResolver";
 import { getMeta } from "@/lib/app-meta";
 import { seedCiqualIfNeeded } from "@/lib/ciqual-seed";
 import i18n, { type LanguagePreference, resolveLanguage } from "@/lib/i18n";
+import { migrateMacrosIfNeeded } from "@/lib/macro-migration";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -60,6 +61,7 @@ export default function RootLayout() {
 			try {
 				setSeeding(true);
 				await seedCiqualIfNeeded();
+				await migrateMacrosIfNeeded();
 			} finally {
 				if (!cancelled) {
 					setSeeding(false);
@@ -117,10 +119,7 @@ export default function RootLayout() {
 				options={{ presentation: "modal", headerShown: false }}
 			/>
 			<Stack.Screen name="meal/[id]" options={{ title: t("nav.meal") }} />
-			<Stack.Screen
-				name="weight/index"
-				options={{ title: t("nav.weight") }}
-			/>
+			<Stack.Screen name="weight/index" options={{ title: t("nav.weight") }} />
 			<Stack.Screen
 				name="profile/index"
 				options={{ title: t("nav.profile") }}
@@ -129,6 +128,7 @@ export default function RootLayout() {
 				name="food/[id]/edit"
 				options={{ title: t("edit.title") }}
 			/>
+			<Stack.Screen name="recipe" options={{ headerShown: false }} />
 		</Stack>
 	);
 }

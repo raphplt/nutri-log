@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	ActivityIndicator,
+	Modal,
 	Pressable,
 	ScrollView,
 	StyleSheet,
@@ -20,8 +21,10 @@ import { colors, fontSize, radii, spacing } from "@/constants/theme";
 import { db } from "@/db/client";
 import { foods } from "@/db/schema";
 import { todayString } from "@/lib/date";
+import { foodEmoji } from "@/lib/food-emoji";
 import type { FoodRow } from "@/lib/food-service";
 import { addMealItem, guessMealType } from "@/lib/meal-service";
+import { addIngredient } from "@/lib/recipe-draft";
 import { type FoodServingRow, getServingsForFood } from "@/lib/serving-service";
 
 function isFoodIncomplete(food: FoodRow): boolean {
@@ -38,7 +41,12 @@ type MealType = "breakfast" | "lunch" | "dinner" | "snack";
 export default function ConfirmScreen() {
 	const { t } = useTranslation();
 	const router = useRouter();
-	const params = useLocalSearchParams<{ foodId?: string; foodJson?: string }>();
+	const params = useLocalSearchParams<{
+		foodId?: string;
+		foodJson?: string;
+		pickOnly?: string;
+	}>();
+	const isPicker = params.pickOnly === "1";
 	const [food, setFood] = useState<FoodRow | null>(null);
 	const [servings, setServings] = useState<FoodServingRow[]>([]);
 	const [selectedServingId, setSelectedServingId] = useState<number | "custom">(
@@ -48,6 +56,7 @@ export default function ConfirmScreen() {
 	const [customQuantity, setCustomQuantity] = useState(100);
 	const [mealType, setMealType] = useState<MealType>(guessMealType());
 	const [saving, setSaving] = useState(false);
+	const [imageViewerOpen, setImageViewerOpen] = useState(false);
 
 	const mealOptions: { value: MealType; label: string }[] = [
 		{ value: "breakfast", label: t("meal.breakfast") },
@@ -106,6 +115,8 @@ export default function ConfirmScreen() {
 		);
 	}
 
+	console.log("food", food);
+
 	const factor = quantity / 100;
 	const kcal = Math.round(food.kcalPer100g * factor);
 	const protein = Math.round(food.proteinPer100g * factor);
@@ -123,6 +134,21 @@ export default function ConfirmScreen() {
 
 	const handleAdd = async () => {
 		setSaving(true);
+		if (isPicker) {
+			addIngredient({
+				foodId: food.id,
+				name: food.name,
+				quantityG: quantity,
+				kcal,
+				protein,
+				carbs,
+				fat,
+				fiber,
+			});
+			Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+			router.dismissAll();
+			return;
+		}
 		await addMealItem({
 			date: todayString(),
 			mealType,
@@ -143,170 +169,216 @@ export default function ConfirmScreen() {
 	};
 
 	return (
-		<ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-			<View style={styles.header}>
-				{food.imageUrl && (
-					<Image
-						source={{ uri: food.imageUrl }}
-						style={styles.image}
-						contentFit="cover"
-						cachePolicy="memory-disk"
-						transition={200}
-					/>
-				)}
-				<View style={styles.headerText}>
-					<Text style={styles.foodName}>{food.name}</Text>
-					{food.brand && <Text style={styles.foodBrand}>{food.brand}</Text>}
-					<View style={styles.badgesRow}>
-						<FoodQualityBadges
-							nutriscoreGrade={food.nutriscoreGrade}
-							novaGroup={food.novaGroup}
-						/>
+		<>
+			<ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+				<View style={styles.header}>
+					{food.imageUrl ? (
+						<Pressable
+							onPress={() => setImageViewerOpen(true)}
+							style={styles.imagePressable}
+						>
+							<Image
+								source={{ uri: food.imageUrl }}
+								style={styles.image}
+								contentFit="cover"
+								cachePolicy="memory-disk"
+								transition={200}
+							/>
+						</Pressable>
+					) : (
+						<View style={[styles.image, styles.imagePlaceholder]}>
+							<Text style={styles.imageEmoji}>{foodEmoji(food.name)}</Text>
+						</View>
+					)}
+					<View style={styles.headerText}>
+						<Text style={styles.foodName}>{food.name}</Text>
+						{food.brand && <Text style={styles.foodBrand}>{food.brand}</Text>}
+						<View style={styles.badgesRow}>
+							<FoodQualityBadges
+								nutriscoreGrade={food.nutriscoreGrade}
+								novaGroup={food.novaGroup}
+							/>
+						</View>
 					</View>
 				</View>
-			</View>
 
-			{isFoodIncomplete(food) && (
-				<Pressable
-					onPress={() =>
-						router.push({
-							pathname: "/food/[id]/edit",
-							params: { id: food.id },
-						})
-					}
-					style={styles.incompleteBanner}
-				>
-					<Text style={styles.incompleteText}>
-						{t("confirm.incompleteData")}
-					</Text>
-					<Text style={styles.incompleteAction}>{t("confirm.editData")}</Text>
-				</Pressable>
-			)}
+				{isFoodIncomplete(food) && (
+					<Pressable
+						onPress={() =>
+							router.push({
+								pathname: "/food/[id]/edit",
+								params: { id: food.id },
+							})
+						}
+						style={styles.incompleteBanner}
+					>
+						<Text style={styles.incompleteText}>
+							{t("confirm.incompleteData")}
+						</Text>
+						<Text style={styles.incompleteAction}>{t("confirm.editData")}</Text>
+					</Pressable>
+				)}
 
-			<View style={styles.portionSection}>
-				<Text style={styles.sectionLabel}>{t("confirm.portion")}</Text>
-				<ScrollView
-					horizontal
-					showsHorizontalScrollIndicator={false}
-					contentContainerStyle={styles.portionRow}
-				>
-					{servings.map((s) => (
+				<View style={styles.portionSection}>
+					<Text style={styles.sectionLabel}>{t("confirm.portion")}</Text>
+					<ScrollView
+						horizontal
+						showsHorizontalScrollIndicator={false}
+						contentContainerStyle={styles.portionRow}
+					>
+						{servings.map((s) => (
+							<Pressable
+								key={s.id}
+								onPress={() => selectServing(s.id)}
+								style={[
+									styles.portionChip,
+									selectedServingId === s.id && styles.portionChipSelected,
+								]}
+							>
+								<Text
+									style={[
+										styles.portionChipText,
+										selectedServingId === s.id &&
+											styles.portionChipTextSelected,
+									]}
+									numberOfLines={1}
+								>
+									{s.label}
+								</Text>
+							</Pressable>
+						))}
 						<Pressable
-							key={s.id}
-							onPress={() => selectServing(s.id)}
+							onPress={() => selectServing("custom")}
 							style={[
 								styles.portionChip,
-								selectedServingId === s.id && styles.portionChipSelected,
+								selectedServingId === "custom" && styles.portionChipSelected,
 							]}
 						>
 							<Text
 								style={[
 									styles.portionChipText,
-									selectedServingId === s.id && styles.portionChipTextSelected,
+									selectedServingId === "custom" &&
+										styles.portionChipTextSelected,
 								]}
-								numberOfLines={1}
 							>
-								{s.label}
+								{t("confirm.portionCustom")}
 							</Text>
 						</Pressable>
-					))}
-					<Pressable
-						onPress={() => selectServing("custom")}
-						style={[
-							styles.portionChip,
-							selectedServingId === "custom" && styles.portionChipSelected,
-						]}
-					>
-						<Text
-							style={[
-								styles.portionChipText,
-								selectedServingId === "custom" &&
-									styles.portionChipTextSelected,
-							]}
-						>
-							{t("confirm.portionCustom")}
-						</Text>
-					</Pressable>
-				</ScrollView>
-			</View>
+					</ScrollView>
+				</View>
 
-			<View style={styles.quantitySection}>
-				<Text style={styles.quantityLabel}>{t("confirm.quantity")}</Text>
-				<Text style={styles.quantityValue}>
-					{Math.round(quantity)}
-					{t("common.grams")}
-				</Text>
-				{selectedServing ? (
-					<>
+				<View style={styles.quantitySection}>
+					<Text style={styles.quantityLabel}>{t("confirm.quantity")}</Text>
+					<Text style={styles.quantityValue}>
+						{Math.round(quantity)}
+						{t("common.grams")}
+					</Text>
+					{selectedServing ? (
+						<>
+							<Slider
+								style={styles.slider}
+								value={multiplier}
+								onValueChange={setMultiplier}
+								minimumValue={0.25}
+								maximumValue={5}
+								step={0.25}
+								minimumTrackTintColor={colors.primary}
+								maximumTrackTintColor={colors.border}
+								thumbTintColor={colors.primary}
+							/>
+							<Text style={styles.multiplierHint}>
+								×{multiplier.toFixed(2)}
+							</Text>
+						</>
+					) : (
 						<Slider
 							style={styles.slider}
-							value={multiplier}
-							onValueChange={setMultiplier}
-							minimumValue={0.25}
-							maximumValue={5}
-							step={0.25}
+							value={customQuantity}
+							onValueChange={setCustomQuantity}
+							minimumValue={10}
+							maximumValue={500}
+							step={5}
 							minimumTrackTintColor={colors.primary}
 							maximumTrackTintColor={colors.border}
 							thumbTintColor={colors.primary}
 						/>
-						<Text style={styles.multiplierHint}>×{multiplier.toFixed(2)}</Text>
+					)}
+				</View>
+
+				<View style={styles.macroGrid}>
+					<MacroCell
+						label={t("macro.calories")}
+						value={`${kcal}`}
+						unit={t("common.kcal")}
+					/>
+					<MacroCell
+						label={t("macro.protein")}
+						value={`${protein}`}
+						unit={t("common.grams")}
+					/>
+					<MacroCell
+						label={t("macro.carbs")}
+						value={`${carbs}`}
+						unit={t("common.grams")}
+					/>
+					<MacroCell
+						label={t("macro.fat")}
+						value={`${fat}`}
+						unit={t("common.grams")}
+					/>
+				</View>
+
+				{!isPicker && (
+					<>
+						<Text style={styles.sectionLabel}>{t("confirm.mealType")}</Text>
+						<View style={styles.mealGrid}>
+							{mealOptions.map((m) => (
+								<SelectCard
+									key={m.value}
+									title={m.label}
+									selected={mealType === m.value}
+									onPress={() => setMealType(m.value)}
+								/>
+							))}
+						</View>
 					</>
-				) : (
-					<Slider
-						style={styles.slider}
-						value={customQuantity}
-						onValueChange={setCustomQuantity}
-						minimumValue={10}
-						maximumValue={500}
-						step={5}
-						minimumTrackTintColor={colors.primary}
-						maximumTrackTintColor={colors.border}
-						thumbTintColor={colors.primary}
-					/>
 				)}
-			</View>
 
-			<View style={styles.macroGrid}>
-				<MacroCell
-					label={t("macro.calories")}
-					value={`${kcal}`}
-					unit={t("common.kcal")}
+				<NextButton
+					label={
+						saving
+							? t("common.adding")
+							: isPicker
+								? t("recipes.addIngredient")
+								: t("common.add")
+					}
+					onPress={handleAdd}
+					disabled={saving}
 				/>
-				<MacroCell
-					label={t("macro.protein")}
-					value={`${protein}`}
-					unit={t("common.grams")}
-				/>
-				<MacroCell
-					label={t("macro.carbs")}
-					value={`${carbs}`}
-					unit={t("common.grams")}
-				/>
-				<MacroCell
-					label={t("macro.fat")}
-					value={`${fat}`}
-					unit={t("common.grams")}
-				/>
-			</View>
+			</ScrollView>
 
-			<Text style={styles.sectionLabel}>{t("confirm.mealType")}</Text>
-			<View style={styles.mealGrid}>
-				{mealOptions.map((m) => (
-					<SelectCard
-						key={m.value}
-						title={m.label}
-						selected={mealType === m.value}
-						onPress={() => setMealType(m.value)}
-					/>
-				))}
-			</View>
-
-			<NextButton
-				label={saving ? t("common.adding") : t("common.add")}
-				onPress={handleAdd}
-				disabled={saving}
-			/>
-		</ScrollView>
+			<Modal
+				visible={imageViewerOpen}
+				transparent
+				animationType="fade"
+				onRequestClose={() => setImageViewerOpen(false)}
+			>
+				<Pressable
+					style={styles.imageModalBackdrop}
+					onPress={() => setImageViewerOpen(false)}
+				>
+					{food.imageUrl ? (
+						<Image
+							source={{ uri: food.imageUrl }}
+							style={styles.imageModalImage}
+							contentFit="contain"
+							cachePolicy="memory-disk"
+							transition={200}
+						/>
+					) : null}
+				</Pressable>
+			</Modal>
+		</>
 	);
 }
 
@@ -349,6 +421,7 @@ const styles = StyleSheet.create({
 		borderRadius: radii.sm,
 		backgroundColor: colors.surface,
 	},
+	imagePressable: { borderRadius: radii.sm, overflow: "hidden" },
 	headerText: { flex: 1 },
 	foodName: { fontSize: fontSize.xl, fontWeight: "700", color: colors.text },
 	foodBrand: { fontSize: fontSize.md, color: colors.textMuted, marginTop: 2 },
@@ -426,6 +499,12 @@ const styles = StyleSheet.create({
 		marginTop: spacing.xs,
 	},
 	badgesRow: { marginTop: spacing.xs },
+	imagePlaceholder: {
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: colors.border,
+	},
+	imageEmoji: { fontSize: 32 },
 	incompleteBanner: {
 		flexDirection: "row",
 		justifyContent: "space-between",
@@ -442,5 +521,16 @@ const styles = StyleSheet.create({
 		color: colors.warning,
 		fontSize: fontSize.sm,
 		fontWeight: "700",
+	},
+	imageModalBackdrop: {
+		flex: 1,
+		backgroundColor: "rgba(0,0,0,0.92)",
+		justifyContent: "center",
+		alignItems: "center",
+		padding: spacing.lg,
+	},
+	imageModalImage: {
+		width: "100%",
+		height: "100%",
 	},
 });

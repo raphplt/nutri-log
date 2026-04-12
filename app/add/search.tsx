@@ -1,5 +1,5 @@
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -13,12 +13,14 @@ import {
 } from "react-native";
 import { FoodQualityBadges } from "@/components/FoodQualityBadges";
 import { colors, fontSize, radii, spacing } from "@/constants/theme";
+import { foodEmoji } from "@/lib/food-emoji";
 import {
 	type FoodRow,
 	getFrequentFoods,
 	searchFoodsLocal,
 	searchFoodsRemote,
 } from "@/lib/food-service";
+import { type RecipeRow, searchRecipes } from "@/lib/recipe-service";
 import { getRecentSearches, recordSearchHistory } from "@/lib/search-service";
 
 const DEBOUNCE_MS = 250;
@@ -26,8 +28,11 @@ const DEBOUNCE_MS = 250;
 export default function SearchScreen() {
 	const { t } = useTranslation();
 	const router = useRouter();
+	const { pickOnly } = useLocalSearchParams<{ pickOnly?: string }>();
+	const isPicker = pickOnly === "1";
 	const [query, setQuery] = useState("");
 	const [results, setResults] = useState<FoodRow[]>([]);
+	const [recipeResults, setRecipeResults] = useState<RecipeRow[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [recentSearches, setRecentSearches] = useState<string[]>([]);
 	const [frequentFoods, setFrequentFoods] = useState<FoodRow[]>([]);
@@ -41,30 +46,45 @@ export default function SearchScreen() {
 		});
 	}, []);
 
-	const runSearch = useCallback(async (text: string) => {
-		if (abortRef.current) abortRef.current.abort();
-		const controller = new AbortController();
-		abortRef.current = controller;
+	const runSearch = useCallback(
+		async (text: string) => {
+			if (abortRef.current) abortRef.current.abort();
+			const controller = new AbortController();
+			abortRef.current = controller;
 
-		setLoading(true);
-		try {
-			const local = await searchFoodsLocal(text, controller.signal);
-			if (controller.signal.aborted) return;
-			setResults(local);
+			setLoading(true);
+			try {
+				if (!isPicker) {
+					const recipes = await searchRecipes(text, { kind: "recipe" });
+					if (controller.signal.aborted) return;
+					setRecipeResults(recipes);
+				} else {
+					setRecipeResults([]);
+				}
 
-			const existing = new Set(
-				local.map((f) => f.barcode).filter((b): b is string => !!b),
-			);
-			const remote = await searchFoodsRemote(text, existing, controller.signal);
-			if (controller.signal.aborted) return;
-			if (remote.length > 0) {
-				setResults([...local, ...remote]);
+				const local = await searchFoodsLocal(text, controller.signal);
+				if (controller.signal.aborted) return;
+				setResults(local);
+
+				const existing = new Set(
+					local.map((f) => f.barcode).filter((b): b is string => !!b),
+				);
+				const remote = await searchFoodsRemote(
+					text,
+					existing,
+					controller.signal,
+				);
+				if (controller.signal.aborted) return;
+				if (remote.length > 0) {
+					setResults([...local, ...remote]);
+				}
+				recordSearchHistory(text);
+			} finally {
+				if (!controller.signal.aborted) setLoading(false);
 			}
-			recordSearchHistory(text);
-		} finally {
-			if (!controller.signal.aborted) setLoading(false);
-		}
-	}, []);
+		},
+		[isPicker],
+	);
 
 	const handleQueryChange = useCallback(
 		(text: string) => {
@@ -74,6 +94,7 @@ export default function SearchScreen() {
 
 			if (text.length < 2) {
 				setResults([]);
+				setRecipeResults([]);
 				setLoading(false);
 				return;
 			}
@@ -89,7 +110,18 @@ export default function SearchScreen() {
 	const handleSelect = (food: FoodRow) => {
 		router.push({
 			pathname: "/add/confirm",
-			params: { foodId: food.id, foodJson: JSON.stringify(food) },
+			params: {
+				foodId: food.id,
+				foodJson: JSON.stringify(food),
+				...(isPicker ? { pickOnly: "1" } : {}),
+			},
+		});
+	};
+
+	const handleSelectRecipe = (recipe: RecipeRow) => {
+		router.push({
+			pathname: "/add/recipe-confirm",
+			params: { recipeId: recipe.id },
 		});
 	};
 
@@ -108,9 +140,12 @@ export default function SearchScreen() {
 					cachePolicy="memory-disk"
 					transition={180}
 					recyclingKey={item.id}
+					placeholder={null}
 				/>
 			) : (
-				<View style={[styles.thumb, styles.thumbPlaceholder]} />
+				<View style={[styles.thumb, styles.thumbPlaceholder]}>
+					<Text style={styles.thumbEmoji}>{foodEmoji(item.name)}</Text>
+				</View>
 			)}
 			<View style={styles.resultInfo}>
 				<View style={styles.nameRow}>
@@ -218,8 +253,38 @@ export default function SearchScreen() {
 					renderItem={renderItem}
 					contentContainerStyle={styles.list}
 					keyboardShouldPersistTaps="handled"
+					ListHeaderComponent={
+						recipeResults.length > 0 ? (
+							<View style={styles.recipeSection}>
+								<Text style={styles.sectionLabel}>
+									{t("recipes.sectionRecipes")}
+								</Text>
+								{recipeResults.map((r) => (
+									<Pressable
+										key={r.id}
+										onPress={() => handleSelectRecipe(r)}
+										style={styles.resultRow}
+									>
+										<View style={[styles.thumb, styles.thumbPlaceholder]}>
+											<Text style={styles.thumbEmoji}>
+												{t("recipes.pickerBadge")}
+											</Text>
+										</View>
+										<View style={styles.resultInfo}>
+											<Text style={styles.resultName} numberOfLines={1}>
+												{r.name}
+											</Text>
+											<Text style={styles.resultBrand} numberOfLines={1}>
+												{t("recipes.listTitle")}
+											</Text>
+										</View>
+									</Pressable>
+								))}
+							</View>
+						) : null
+					}
 					ListEmptyComponent={
-						query.length >= 2 && !loading ? (
+						query.length >= 2 && !loading && recipeResults.length === 0 ? (
 							<Text style={styles.empty}>{t("search.empty")}</Text>
 						) : null
 					}
@@ -243,6 +308,7 @@ const styles = StyleSheet.create({
 	},
 	loader: { marginVertical: spacing.md },
 	list: { paddingHorizontal: spacing.lg },
+	recipeSection: { marginBottom: spacing.md },
 	suggestions: { paddingHorizontal: spacing.lg },
 	suggestionBlock: { marginBottom: spacing.xl },
 	sectionLabel: {
@@ -289,7 +355,12 @@ const styles = StyleSheet.create({
 		marginRight: spacing.md,
 		backgroundColor: colors.background,
 	},
-	thumbPlaceholder: { backgroundColor: colors.border },
+	thumbPlaceholder: {
+		backgroundColor: colors.border,
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	thumbEmoji: { fontSize: 22 },
 	empty: {
 		textAlign: "center",
 		color: colors.textMuted,

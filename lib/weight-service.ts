@@ -1,7 +1,17 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { weightLog } from "@/db/schema";
 import { createId } from "./nanoid";
+
+/** Return the most recent weight entry, or null if weight_log is empty. */
+export async function getLatestWeightKg(): Promise<number | null> {
+	const [row] = await db
+		.select()
+		.from(weightLog)
+		.orderBy(desc(weightLog.date))
+		.limit(1);
+	return row?.weightKg ?? null;
+}
 
 /** Upsert a weight entry for a given date (one entry per day). */
 export async function upsertWeight(date: string, weightKg: number) {
