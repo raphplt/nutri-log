@@ -17,6 +17,7 @@ import { colors, fonts } from "@/constants/theme";
 import { db } from "@/db/client";
 import migrations from "@/drizzle/migrations";
 import { useScanQueueResolver } from "@/hooks/useScanQueueResolver";
+import { StatsPeriodProvider } from "@/hooks/useStatsPeriod";
 import { getMeta } from "@/lib/app-meta";
 import { seedCiqualIfNeeded } from "@/lib/ciqual-seed";
 import i18n, { type LanguagePreference, resolveLanguage } from "@/lib/i18n";
@@ -106,32 +107,38 @@ export default function RootLayout() {
 	}
 
 	return (
-		<Stack
-			screenOptions={{
-				headerStyle: { backgroundColor: colors.background },
-				headerTintColor: colors.text,
-				headerTitleStyle: { fontFamily: fonts.semibold },
-				contentStyle: { backgroundColor: colors.background },
-			}}
-		>
-			<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-			<Stack.Screen name="onboarding" options={{ headerShown: false }} />
-			<Stack.Screen
-				name="add"
-				options={{ presentation: "modal", headerShown: false }}
-			/>
-			<Stack.Screen name="meal/[id]" options={{ title: t("nav.meal") }} />
-			<Stack.Screen name="weight/index" options={{ title: t("nav.weight") }} />
-			<Stack.Screen
-				name="profile/index"
-				options={{ title: t("nav.profile") }}
-			/>
-			<Stack.Screen
-				name="food/[id]/edit"
-				options={{ title: t("edit.title") }}
-			/>
-			<Stack.Screen name="recipe" options={{ headerShown: false }} />
-		</Stack>
+		<StatsPeriodProvider>
+			<Stack
+				screenOptions={{
+					headerStyle: { backgroundColor: colors.background },
+					headerTintColor: colors.text,
+					headerTitleStyle: { fontFamily: fonts.semibold },
+					contentStyle: { backgroundColor: colors.background },
+				}}
+			>
+				<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+				<Stack.Screen name="onboarding" options={{ headerShown: false }} />
+				<Stack.Screen
+					name="add"
+					options={{ presentation: "modal", headerShown: false }}
+				/>
+				<Stack.Screen name="meal/[id]" options={{ title: t("nav.meal") }} />
+				<Stack.Screen
+					name="weight/index"
+					options={{ title: t("nav.weight") }}
+				/>
+				<Stack.Screen
+					name="profile/index"
+					options={{ title: t("nav.profile") }}
+				/>
+				<Stack.Screen
+					name="food/[id]/edit"
+					options={{ title: t("edit.title") }}
+				/>
+				<Stack.Screen name="recipe" options={{ headerShown: false }} />
+				<Stack.Screen name="stats" options={{ headerShown: false }} />
+			</Stack>
+		</StatsPeriodProvider>
 	);
 }
 

@@ -28,6 +28,15 @@ export default function TabLayout() {
 				}}
 			/>
 			<Tabs.Screen
+				name="stats"
+				options={{
+					title: t("nav.stats"),
+					tabBarIcon: ({ color }) => (
+						<FontAwesome name="bar-chart" size={22} color={color} />
+					),
+				}}
+			/>
+			<Tabs.Screen
 				name="settings"
 				options={{
 					title: t("nav.settings"),

@@ -44,6 +44,7 @@
 		"profile": "Profile",
 		"dashboard": "Home",
 		"settings": "Settings",
+		"stats": "Stats",
 		"oops": "Oops!"
 	},
 	"meal": {
@@ -296,5 +297,80 @@
 	"reminders": {
 		"title": "{{label}}",
 		"body": "Don't forget to log your {{label}}!"
+	},
+	"stats": {
+		"title": "Statistics",
+		"period": {
+			"week": "7 d",
+			"month": "30 d",
+			"3m": "90 d",
+			"year": "1 yr",
+			"custom": "Custom"
+		},
+		"cards": {
+			"calories": "Calories",
+			"caloriesDesc": "Daily average & trend",
+			"macros": "Macros",
+			"macrosDesc": "Protein / carbs / fat split",
+			"weight": "Weight",
+			"weightDesc": "Evolution & projection",
+			"habits": "Habits",
+			"habitsDesc": "Streak, regularity, heatmap"
+		},
+		"kpi": {
+			"avgPerDay": "Avg / day",
+			"total": "Total",
+			"loggedDays": "Logged days",
+			"vsTarget": "vs target",
+			"currentStreak": "Current streak",
+			"bestStreak": "Best",
+			"days": "d",
+			"days_one": "d",
+			"days_other": "d"
+		},
+		"calories": {
+			"title": "Calories",
+			"chartTitle": "Daily evolution",
+			"movingAvg": "7-day moving avg",
+			"target": "Target",
+			"dayDetail": "Day details"
+		},
+		"macros": {
+			"title": "Macros",
+			"chartTitle": "Daily split (g)",
+			"splitTitle": "Average split",
+			"avgDaily": "Avg / day",
+			"deltaVsTarget": "Δ vs target"
+		},
+		"weight": {
+			"title": "Weight",
+			"chartTitle": "Evolution",
+			"deltaSincePeriod": "Δ over period",
+			"projection": "At this pace, you reach {{weight}} kg in {{weeks}} wk.",
+			"projectionNone": "No projection — trend flat or off-target.",
+			"noData": "Not enough weigh-ins for this period."
+		},
+		"habits": {
+			"title": "Habits",
+			"streak": "Streak",
+			"best": "Best streak",
+			"byMealType": "Average per meal type",
+			"heatmap": "Regularity",
+			"heatmapHint": "Intensity = % of target reached",
+			"bestDay": "Highest-calorie day",
+			"worstDay": "Lowest-calorie day"
+		},
+		"compare": {
+			"vsPrevious": "vs previous period"
+		},
+		"empty": {
+			"title": "Not enough data yet",
+			"hint": "Log at least 3 days to see your stats."
+		},
+		"export": {
+			"button": "Export as CSV",
+			"shareTitle": "NutriLog export",
+			"done": "Export ready"
+		}
 	}
 }

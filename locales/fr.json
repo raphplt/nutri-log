@@ -44,6 +44,7 @@
 		"profile": "Profil",
 		"dashboard": "Accueil",
 		"settings": "Réglages",
+		"stats": "Stats",
 		"oops": "Oups !"
 	},
 	"meal": {
@@ -296,5 +297,80 @@
 	"reminders": {
 		"title": "{{label}}",
 		"body": "N'oublie pas de logger ton {{label}} !"
+	},
+	"stats": {
+		"title": "Statistiques",
+		"period": {
+			"week": "7 j",
+			"month": "30 j",
+			"3m": "90 j",
+			"year": "1 an",
+			"custom": "Perso"
+		},
+		"cards": {
+			"calories": "Calories",
+			"caloriesDesc": "Moyenne journalière & tendance",
+			"macros": "Macros",
+			"macrosDesc": "Répartition protéines / glucides / lipides",
+			"weight": "Poids",
+			"weightDesc": "Évolution & projection",
+			"habits": "Habitudes",
+			"habitsDesc": "Streak, régularité, heatmap"
+		},
+		"kpi": {
+			"avgPerDay": "Moy. / jour",
+			"total": "Total",
+			"loggedDays": "Jours loggés",
+			"vsTarget": "vs objectif",
+			"currentStreak": "Streak actuel",
+			"bestStreak": "Meilleur",
+			"days": "j",
+			"days_one": "j",
+			"days_other": "j"
+		},
+		"calories": {
+			"title": "Calories",
+			"chartTitle": "Évolution journalière",
+			"movingAvg": "Moyenne mobile 7 j",
+			"target": "Objectif",
+			"dayDetail": "Détail du jour"
+		},
+		"macros": {
+			"title": "Macros",
+			"chartTitle": "Répartition journalière (g)",
+			"splitTitle": "Répartition moyenne",
+			"avgDaily": "Moy. / jour",
+			"deltaVsTarget": "Δ vs objectif"
+		},
+		"weight": {
+			"title": "Poids",
+			"chartTitle": "Évolution",
+			"deltaSincePeriod": "Δ sur la période",
+			"projection": "À ce rythme, tu atteins {{weight}} kg dans {{weeks}} sem.",
+			"projectionNone": "Pas de projection — tendance stable ou hors cap.",
+			"noData": "Pas assez de pesées sur la période."
+		},
+		"habits": {
+			"title": "Habitudes",
+			"streak": "Streak",
+			"best": "Meilleur streak",
+			"byMealType": "Moyenne par type de repas",
+			"heatmap": "Régularité",
+			"heatmapHint": "Intensité = % de l'objectif atteint",
+			"bestDay": "Jour le + calorique",
+			"worstDay": "Jour le - calorique"
+		},
+		"compare": {
+			"vsPrevious": "vs période précédente"
+		},
+		"empty": {
+			"title": "Pas encore assez de données",
+			"hint": "Logue au moins 3 jours pour voir tes statistiques."
+		},
+		"export": {
+			"button": "Exporter en CSV",
+			"shareTitle": "Export NutriLog",
+			"done": "Export prêt"
+		}
 	}
 }
