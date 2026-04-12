@@ -1,5 +1,5 @@
-import { nanoid } from 'nanoid';
+import { nanoid } from "nanoid/non-secure";
 
 export function createId(): string {
-  return nanoid(12);
+	return nanoid(12);
 }
