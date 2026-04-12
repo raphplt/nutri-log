@@ -24,21 +24,14 @@ export default function DashboardScreen() {
   const [date, setDate] = useState(todayString);
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
-  const { data: profiles } = useLiveQuery(db.select().from(userProfile));
+  const { data: profiles, updatedAt: profilesUpdatedAt } = useLiveQuery(db.select().from(userProfile));
   const { data: goalsData } = useLiveQuery(db.select().from(userGoalsTable));
   const goals = useGoals();
   const totals = useDailyTotals(date);
   const meals = useDailyMeals(date);
   const weights = useRecentWeights();
 
-  if (profiles.length === 0) {
-    return <Redirect href="/onboarding" />;
-  }
-
   const profile = profiles[0];
-  const remaining = goals.kcalTarget - totals.totalKcal;
-
-  // Check if weight changed significantly since last TDEE calculation
   const latestWeight = weights.length > 0 ? weights[weights.length - 1].weightKg : null;
   const onboardingWeight = weights.length > 0 ? weights[0].weightKg : null;
   const weightDelta = latestWeight && onboardingWeight ? latestWeight - onboardingWeight : 0;
@@ -60,6 +53,16 @@ export default function DashboardScreen() {
     );
     setBannerDismissed(true);
   }, [profile, latestWeight, goalsData]);
+
+  if (profilesUpdatedAt === undefined) {
+    return null;
+  }
+
+  if (profiles.length === 0) {
+    return <Redirect href="/onboarding" />;
+  }
+
+  const remaining = goals.kcalTarget - totals.totalKcal;
 
   return (
     <View style={styles.screen}>
